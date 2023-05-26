@@ -7,8 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import com.blaine.lox.generated.Expr;
-
 class Lox {
     public static void main(String[] args) throws Exception {
         if (args.length > 1) {
