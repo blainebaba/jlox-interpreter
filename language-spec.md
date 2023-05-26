@@ -1,5 +1,16 @@
-## Language features
+### Table of Contents
+- [Language Features](#language-features)
+  - [Required Features](#required-features)
+  - [Additional Features](#additional-features)
+- [Implementation](#implementation)
+  - [Expression operators' precedence and associates](#expression-operators-precedence-and-associates)
+- [Notes](#notes)
 
+
+## Language Features
+
+### Required Features
+Features required by book.
 * data types
     * boolean: `true` or `false`
     * number: in format "123" or "123.456"
@@ -47,12 +58,8 @@
 * scanner
     * record line number of each token
 
-
-
-## Additional language features
-
+### Additional Features
 These are not required by the specification (the book).
-
 * syntax 
     * for each loop
     * boolean operators: `and`, `or`, `not`, `&&`, `||`, `!` (weird to mix both styles)
@@ -61,6 +68,26 @@ These are not required by the specification (the book).
     * multile comments use `/*` and `*/`
 * scanner
     * record column of each token
+
+## Implementation
+
+### Expression operators' precedence and associates
+
+Precedence from low to high.
+
+| Operators         | Description         | Associates    |
+| :---------------- | :------------------ | :------------ |
+| `or`              | bool or             | left-to-right |
+| `and`             | bool and            | left-to-right |
+| `==` `!=`         | equality            | left-to-right |
+| `<` `>` `<=` `>=` | comparison          | left-to-right |
+| `+` `-`           | add and subtract    | left-to-right |
+| `*` `/`           | multiply and divide | left-to-right |
+| `-` `!`           | negate, bool not    | right-to-left |
+
+Same precedence as C.
+
+(refer: [C language expression precedence](https://en.cppreference.com/w/c/language/operator_precedence))
 
 ## Notes
 * How lox implements array?
