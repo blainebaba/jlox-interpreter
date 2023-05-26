@@ -3,7 +3,7 @@
 * data types
     * boolean: `true` or `false`
     * number: in format "123" or "123.456"
-    * string: enclosed by double quotes
+    * string: enclosed by double quotes, in single line.
     * nil: represented by `nil`
 * expressions operators
     * arithmetic: 
@@ -17,6 +17,7 @@
 * expressions precedence and association.
 * statements
     * statement ends with `;`
+    * single line comment uses `//`
     * statement block noted by `{` and `}`
     * dynamic type, variables noted by `var`
     * assignment: "var a = 1;"
@@ -41,9 +42,10 @@
         * inheritance: use `<` "class Bar < Foo { ... }"
             * init methods are inherited.
             * call super class init methods through `super`. "super.init();"
-    * standard library
-        * clock(): return number of seconds since the program started.
-    
+* standard library
+    * clock(): return number of seconds since the program started.
+* scanner
+    * record line number of each token
 
 
 
@@ -51,10 +53,15 @@
 
 These are not required by the specification (the book).
 
-* for each loop
-* boolean operators: `and`, `or`, `not`, `&&`, `||`, `!` (weird to mix both styles)
-* `elif`
-* 
+* syntax 
+    * for each loop
+    * boolean operators: `and`, `or`, `not`, `&&`, `||`, `!` (weird to mix both styles)
+    * `elif`
+    * `switch`
+    * multile comments use `/*` and `*/`
+* scanner
+    * record column of each token
 
 ## Notes
-* what about array?
+* How lox implements array?
+* I assume TAB always has size of 4 column, is that always true?
