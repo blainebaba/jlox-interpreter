@@ -6,6 +6,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.blaine.lox.generated.Expr;
+import com.blaine.lox.parser.Parser;
 
 class Lox {
     public static void main(String[] args) throws Exception {
@@ -38,9 +42,21 @@ class Lox {
     private static void run(String script) {
         Scanner scanner = new Scanner(script);
         List<Token> tokens = scanner.scan();
+        // printTokens(tokens);
 
-        for (Token token : tokens) {
-            System.out.println(String.format("%s %s line:%d column:%d", token.lexeme, token.type.name(), token.line, token.column));
-        }
+        // parse
+        Parser parser = new Parser(tokens);
+        Expr expr = parser.parse();
+
+        // print expression
+        String notPrettyStr = expr.accept(new NotPrettyAstPrinter());
+        System.out.println(notPrettyStr);
+    }
+
+    private static void printTokens(List<Token> tokens) {
+        String str = tokens.stream()
+            .map(token -> (token.type.name()))
+            .collect(Collectors.joining(" "));
+        System.out.println(str);
     }
 }

@@ -7,6 +7,9 @@ import com.blaine.lox.generated.Expr.Grouping;
 import com.blaine.lox.generated.Expr.Literal;
 import com.blaine.lox.generated.Expr.Unary;
 
+/**
+ * Format Expr into a not quite pretty string.
+ */
 public class NotPrettyAstPrinter implements ExprVisitor<String> {
 
     @Override
