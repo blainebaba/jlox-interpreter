@@ -4,6 +4,7 @@
   - [Additional Features](#additional-features)
 - [Implementation](#implementation)
   - [Expression operators' precedence and associates](#expression-operators-precedence-and-associates)
+  - [Expression Parsing Rules](#expression-parsing-rules)
 - [Notes](#notes)
 
 
@@ -84,6 +85,19 @@ Precedence from low to high.
 | `+` `-`           | add and subtract    | left-to-right |
 | `*` `/`           | multiply and divide | left-to-right |
 | `-` `!`           | negate, bool not    | right-to-left |
+
+### Expression Parsing Rules
+```
+EXPR -> OR_TERM
+OR_TERM -> AND_TERM ("or" AND_TERM)*
+AND_TERM -> EQUAL_TERM ("and" EQUAL_TERM)*
+EQUAL_TERM -> COMP_TERM (("=="|"!=") COMP_TERM)*
+COMP_TERM -> ADD_TERM (("<"|">"|"<="|">=") ADD_TERM)*
+ADD_TERM -> MUL_TERM (("+"|"-") MUL_TERM)*
+MUL_TERM -> UNARY_TERM (("*"|"/") UNARY_TERM)*
+UNARY_TERM -> ("!"|"-") UNARY_TERM | PRIMARY
+PRIMARY -> STRING|NUMBER|IDENTIFIER|"true"|"false"|nil|"(" EXPR ")"
+```
 
 Same precedence as C.
 
