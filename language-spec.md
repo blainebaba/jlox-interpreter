@@ -80,6 +80,8 @@ These are not required by the specification (the book).
     * For `+`, implicit convert to string type when one operand is string.
 * scanner
     * record column of each token
+* parser
+    * throw parserError if variable is used without being initialized. Different from undefined variable.
 * interpreter
     * print stack trace
 
@@ -122,10 +124,15 @@ Implement parser is basically converting these rules into code.
 ### Statement parsing rules
 PROGRAM -> RELAX_STMT* "EOF"
 RELAX_STMT -> DECLARE_STMT | STRICT_STMT
-STRICT_STMT -> EXPR_STMT | PRINT_STMT
+STRICT_STMT -> EXPR_STMT | PRINT_STMT | BLOCK_STMT | IF_STMT | WHILE_STMT | FOR_STMT
+
 DECLARE_STMT -> "var" IDENTIFIER ("=" EXPR)? ";"
 EXPR_STMT -> EXPR ";"
 PRINT_STMT -> "print" EXPR ";"
+BLOCK_STMT -> "{" RELAX_STMT* "}"
+IF_STMT -> "if" "(" EXPR ")" RELAX_STMT ("else" RELAX_STMT)?
+WHILE_STMT -> "while" "(" EXPR ")" RELAX_STMT
+FOR_STMT -> "for" "(" (DECLARE_STMT|EXPR_STMT|";") EXPR? ";" EXPR? ";" ")" RELAX_STMT
 
 RELAX_STMT is introduced to exclude DECLARE_STMT from some use cases.
 
