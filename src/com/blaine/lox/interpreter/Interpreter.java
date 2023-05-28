@@ -24,10 +24,13 @@ import java.util.Arrays;
 
 public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
 
-    private Environment env;
+    // root env
+    private Environment rootEnv;
+    private Environment curEnv;
 
     public Interpreter() {
-        this.env = new Environment();
+        this.rootEnv = new Environment(null);
+        this.curEnv = rootEnv;
     }
 
     public void execute(Stmt stmt) {
@@ -41,7 +44,7 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     @Override
     public Object visitAssignExpr(AssignExpr assign) {
         Object value = assign.expr.accept(this);
-        env.assignGlobalVar(assign.varName, value, assign.var);
+        curEnv.assignVar(assign.varName, value, assign.var);
         return value;
     }
 
@@ -142,7 +145,7 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
 
     @Override
     public Object visitVariableExpr(VariableExpr var) {
-        return env.evaluateGlobalVar(var.varName, var.token);
+        return curEnv.evaluateVar(var.varName, var.token);
     }
 
     private void checkBinaryExprOperandType(Object left, Object right, Token operator, Class<?> ... types) {
@@ -200,16 +203,18 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
         if (stmt.expression != null) {
             initValue = stmt.expression.accept(this);
         }
-        env.declareGlobalVar(stmt.varName, initValue);
+        curEnv.declareVar(stmt.varName, initValue);
         return null;
     }
 
     @Override
     public Void visitBlockStmt(BlockStmt blockstmt) {
         // TODO lexical scope
+        pushEnv();
         for (Stmt stmt : blockstmt.stmts) {
             stmt.accept(this);
         }
+        popEnv();
         return null;
     }
 
@@ -237,6 +242,17 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     ///////////
 
     Environment getEnv() {
-        return env;
+        return curEnv;
+    }
+
+    // push one more level of Env
+    private void pushEnv() {
+        Environment env = new Environment(curEnv);
+        curEnv = env;
+    }
+    
+    // back to previous env level
+    private void popEnv() {
+        curEnv = curEnv.outer;
     }
 }

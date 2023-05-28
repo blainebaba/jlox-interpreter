@@ -10,37 +10,61 @@ import com.blaine.lox.Token;
  */
 public class Environment {
 
-    private Map<String, Object> globalVariables;
+    // env of outer scope
+    public final Environment outer;
 
-    public Environment() {
-        globalVariables = new HashMap<>();
+    private Map<String, Object> vars = new HashMap<>();
+
+    public Environment(Environment outer) {
+        this.outer = outer;
     }
 
-    public void declareGlobalVar(String name, Object initValue) {
-        globalVariables.put(name, initValue);
+    public void declareVar(String name, Object initValue) {
+        vars.put(name, initValue);
     }
 
-    public Object evaluateGlobalVar(String varName, Token var) {
-        if (!containsGlobalVar(varName)) {
-            throw new RuntimeError(String.format("Undefined variable '%s'", varName), var.line, var.column);
+    // if current env doesn't have, go to outer scope.
+    public Object evaluateVar(String varName, Token var) {
+        if (localContainsVar(varName)) {
+            return vars.get(varName);
         }
-        return globalVariables.get(varName);
-    }
 
-    public boolean containsGlobalVar(String name) {
-        return globalVariables.containsKey(name);
-    }
-
-    public void assignGlobalVar(String varName, Object value, Token var) {
-        if (!containsGlobalVar(varName)) {
-            throw new RuntimeError(String.format("Undefined variable '%s'", varName), var.line, var.column);
+        if (outer != null) {
+            return outer.evaluateVar(varName, var);
         }
-        globalVariables.put(varName, value);
+
+        throw new RuntimeError(String.format("Undefined variable '%s'", varName), var.line, var.column);
     }
 
-    // read global variable, without checking existance
-    public Object getGlobalVar(String varName) {
-        return globalVariables.get(varName);
+    // if current scope has variable
+    public boolean localContainsVar(String name) {
+        return vars.containsKey(name);
     }
 
+    public void assignVar(String varName, Object value, Token var) {
+        if (localContainsVar(varName)) {
+            vars.put(varName, value);
+            return;
+        }
+
+        if (outer != null) {
+            outer.assignVar(varName, value, var);
+            return;
+        }
+
+        throw new RuntimeError(String.format("Undefined variable '%s'", varName), var.line, var.column);
+    }
+
+    // read variable, without checking existance
+    public Object getVar(String varName) {
+        if (localContainsVar(varName)) {
+            return vars.get(varName);
+        }
+
+        if (outer != null) {
+            return outer.getVar(varName);
+        }
+
+        return null;
+    }
 }

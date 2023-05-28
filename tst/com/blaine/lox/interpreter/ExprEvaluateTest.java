@@ -102,24 +102,24 @@ public class ExprEvaluateTest {
     public void testEvaluateAssign() {
         // happy case
         {
-            env.declareGlobalVar("a", null);
+            env.declareVar("a", null);
             assertEquals(1.0, evaluate("a = 1"));
-            assertEquals(1.0, env.getGlobalVar("a"));
+            assertEquals(1.0, env.getVar("a"));
         }
         // assign to undefined var
         {
             evaluateExpectError("b = 2");
-            assertEquals(null, env.getGlobalVar("b"));
+            assertEquals(null, env.getVar("b"));
         }
         // chain assignment
         {
-            interpreter.getEnv().declareGlobalVar("c", null);
-            interpreter.getEnv().declareGlobalVar("d", null);
-            interpreter.getEnv().declareGlobalVar("e", null);
+            interpreter.getEnv().declareVar("c", null);
+            interpreter.getEnv().declareVar("d", null);
+            interpreter.getEnv().declareVar("e", null);
             assertEquals(1.0, evaluate("c = d = e = 1"));
-            assertEquals(1.0, env.getGlobalVar("c"));
-            assertEquals(1.0, env.getGlobalVar("d"));
-            assertEquals(1.0, env.getGlobalVar("e"));
+            assertEquals(1.0, env.getVar("c"));
+            assertEquals(1.0, env.getVar("d"));
+            assertEquals(1.0, env.getVar("e"));
         }
     }
 
@@ -127,7 +127,7 @@ public class ExprEvaluateTest {
     public void testEvaluateVariable() {
         // exist global var 
         {
-            interpreter.getEnv().declareGlobalVar("a", 1.0);
+            interpreter.getEnv().declareVar("a", 1.0);
             assertEquals(1.0, evaluate("a"));
         }
         // non-exist global var 

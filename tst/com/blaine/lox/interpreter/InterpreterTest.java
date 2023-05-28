@@ -28,10 +28,49 @@ public class InterpreterTest {
     }
 
     @Test
-    public void testGlobalVariables() {
+    public void testVariables() {
         execute(parseStmts("var a = 1; var b = 2; var c = a + b;"));
-        assertEquals(3.0, env.getGlobalVar("c"));
+        assertEquals(3.0, env.getVar("c"));
     } 
+
+    @Test
+    public void testVariableScope() {
+        {
+            execute(parseStmts("var a = 1; {a = 2;}"));
+            assertEquals(2.0, env.getVar("a"));
+        }
+
+        {
+            execute(parseStmts("var b = 1; {var b = 2; b = 3;}"));
+            assertEquals(1.0, env.getVar("b"));
+        }
+
+        {
+            execute(parseStmts("{var c = 1;}"));
+            assertEquals(null, env.getVar("c"));
+        }
+    } 
+
+    @Test
+    public void testIfStmt() {
+        execute(parseStmts("var a=1; var b=2; if (a<b) {a=a+1;} else {b=b+1;}"));
+        assertEquals(2.0, env.getVar("a"));
+        assertEquals(2.0, env.getVar("b"));
+    }
+
+    @Test
+    public void testWhileStmt() {
+        execute(parseStmts("var a = 1; while (a < 10) {a = a + 1;}"));
+        assertEquals(10.0, env.getVar("a"));
+    }
+
+    @Test
+    public void testForStmt() {
+        execute(parseStmts("var a = 0; for (var b = 0; b < 10; b = b + 1) { a = a + 1;}"));
+        assertEquals(10.0, env.getVar("a"));
+        // "b" should not be available outside of for.
+        assertEquals(null, env.getVar("b"));
+    }
 
     private List<Stmt> parseStmts(String script) {
         List<Token> tokens = new Scanner(script).scan();

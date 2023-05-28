@@ -80,7 +80,7 @@ public class StmtExecuteTest {
             assertEquals(DeclareStmt.class, stmt.getClass());
 
             interpreter.execute(stmt);
-            Object value = interpreter.getEnv().getGlobalVar("a");
+            Object value = interpreter.getEnv().getVar("a");
             assertEquals(1.0, value);
         }
         // invalid statements
@@ -95,10 +95,8 @@ public class StmtExecuteTest {
     public void testBlockStmt() {
         // happy case
         {
-            Stmt stmt = parseOneStmt("{var a = 1; var b = 1;}");
+            Stmt stmt = parseOneStmt("{var a = 1;}");
             stmt.accept(interpreter);
-            assertEquals(1.0, env.getGlobalVar("a"));
-            assertEquals(1.0, env.getGlobalVar("b"));
         }
         // invalid
         parseExpectError("{1 + 1}");
@@ -111,7 +109,7 @@ public class StmtExecuteTest {
         {
             Stmt stmt = parseOneStmt("if (1 > 2) var a = 1; else var a = 2;");
             stmt.accept(interpreter);
-            assertEquals(2.0, env.getGlobalVar("a"));
+            assertEquals(2.0, env.getVar("a"));
         }  
         // invalid
         parseExpectError("if (var a = 1;) var b = 2;");
@@ -127,7 +125,6 @@ public class StmtExecuteTest {
         {
             Stmt stmt = parseOneStmt("{var a = 1; while (a < 5) a = a + 1;}");
             stmt.accept(interpreter);
-            assertEquals(5.0, env.getGlobalVar("a"));
         }  
         // invalid
         parseExpectError("while");
@@ -140,10 +137,8 @@ public class StmtExecuteTest {
     public void testForStmt() {
         // happy case
         {
-            Stmt stmt = parseOneStmt("{var b = 0; for (var a = 0; a < 5; a = a + 1) b = b + 1;}");
+            Stmt stmt = parseOneStmt("for (var a = 0; a < 5; a = a + 1) {}");
             stmt.accept(interpreter);
-            assertEquals(5.0, env.getGlobalVar("b"));
-            assertEquals(5.0, env.getGlobalVar("a"));
         }  
         // invalid
         parseExpectError("for ()");
