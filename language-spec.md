@@ -144,3 +144,4 @@ RELAX_STMT is introduced to exclude DECLARE_STMT from some use cases.
 * I assume TAB always has size of 4 column, is that always true?
 * how is divided by zero handled ?
 * why EOF token at the end of program? Without it seems fine.
+* with syntax suger, how to correctly locate syntax error to correct place?

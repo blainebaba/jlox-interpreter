@@ -100,7 +100,11 @@ public class ExprParser {
             Token token = p.consume();
             return new LiteralExpr(null, token);
         } else {
-            throw new ParserError(String.format("Unexpected token '%s'", p.cur().lexeme), p.cur().line, p.cur().column);
+            if (p.isEnd()) {
+                throw new ParserError("Unexpected end of file.");
+            } else {
+                throw new ParserError(String.format("Unexpected token '%s'", p.cur().lexeme), p.cur().line, p.cur().column);
+            }
         }
     }
 

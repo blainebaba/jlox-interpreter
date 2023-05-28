@@ -37,14 +37,17 @@ public class GenerateAst {
             Arrays.asList(
                 "Expression:Expr expression",
                 "Print:Expr expression",
-                "Declare:String varName,Expr expression"
+                "Declare:String varName,Expr expression",
+                "Block:List<Stmt> stmts",
+                "If:Expr cond,Stmt ifClause,Stmt elseClause",
+                "While:Expr cond,Stmt stmt"
             ), 
-            Arrays.asList()
+            Arrays.asList("java.util.List")
         );
 
         // defines expression visitor
         defineVisitor("com/blaine/lox/generated", "Stmt", Arrays.asList(
-            "Expression", "Print", "Declare"
+            "Expression", "Print", "Declare", "Block", "If", "While"
         ));
     }
 

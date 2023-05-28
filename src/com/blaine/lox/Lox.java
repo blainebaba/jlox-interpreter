@@ -73,7 +73,7 @@ class Lox {
         }
     }
 
-    private static void printTokens(List<Token> tokens) {
+     static void printTokens(List<Token> tokens) {
         String str = tokens.stream()
             .map(token -> (token.type.name()))
             .collect(Collectors.joining(" "));

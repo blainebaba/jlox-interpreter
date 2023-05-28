@@ -90,4 +90,65 @@ public class StmtExecuteTest {
             parseExpectError("var a == b;");
         }
     }
+
+    @Test
+    public void testBlockStmt() {
+        // happy case
+        {
+            Stmt stmt = parseOneStmt("{var a = 1; var b = 1;}");
+            stmt.accept(interpreter);
+            assertEquals(1.0, env.getGlobalVar("a"));
+            assertEquals(1.0, env.getGlobalVar("b"));
+        }
+        // invalid
+        parseExpectError("{1 + 1}");
+        parseExpectError("{var a = 1; var b = 1;");
+    }
+
+    @Test
+    public void testIfStmt() {
+        // happy case
+        {
+            Stmt stmt = parseOneStmt("if (1 > 2) var a = 1; else var a = 2;");
+            stmt.accept(interpreter);
+            assertEquals(2.0, env.getGlobalVar("a"));
+        }  
+        // invalid
+        parseExpectError("if (var a = 1;) var b = 2;");
+        parseExpectError("if");
+        parseExpectError("if ()");
+        parseExpectError("if (true)");
+        parseExpectError("{ if (true) 1 + 1 }");
+    }
+
+    @Test
+    public void testWhileStmt() {
+        // happy case
+        {
+            Stmt stmt = parseOneStmt("{var a = 1; while (a < 5) a = a + 1;}");
+            stmt.accept(interpreter);
+            assertEquals(5.0, env.getGlobalVar("a"));
+        }  
+        // invalid
+        parseExpectError("while");
+        parseExpectError("while ()");
+        parseExpectError("while (1 + 1;)");
+        parseExpectError("while (true) 1 + 1");
+    }
+
+    @Test
+    public void testForStmt() {
+        // happy case
+        {
+            Stmt stmt = parseOneStmt("{var b = 0; for (var a = 0; a < 5; a = a + 1) b = b + 1;}");
+            stmt.accept(interpreter);
+            assertEquals(5.0, env.getGlobalVar("b"));
+            assertEquals(5.0, env.getGlobalVar("a"));
+        }  
+        // invalid
+        parseExpectError("for ()");
+        parseExpectError("for (;)");
+        parseExpectError("for (1 + 1; ;)");
+    }
+
 }

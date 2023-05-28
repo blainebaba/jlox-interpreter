@@ -6,9 +6,12 @@ import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
+import com.blaine.lox.generated.Stmt.BlockStmt;
 import com.blaine.lox.generated.Stmt.DeclareStmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
+import com.blaine.lox.generated.Stmt.IfStmt;
 import com.blaine.lox.generated.Stmt.PrintStmt;
+import com.blaine.lox.generated.Stmt.WhileStmt;
 import com.blaine.lox.Token;
 import com.blaine.lox.Token.TokenType;
 import com.blaine.lox.generated.ExprVisitor;
@@ -200,6 +203,38 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
         env.declareGlobalVar(stmt.varName, initValue);
         return null;
     }
+
+    @Override
+    public Void visitBlockStmt(BlockStmt blockstmt) {
+        // TODO lexical scope
+        for (Stmt stmt : blockstmt.stmts) {
+            stmt.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(IfStmt ifstmt) {
+        if (toBoolean(ifstmt.cond.accept(this))) {
+            ifstmt.ifClause.accept(this);
+        }
+        else if (ifstmt.elseClause != null) {
+            ifstmt.elseClause.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(WhileStmt whilestmt) {
+        while (toBoolean(whilestmt.cond.accept(this))) {
+            whilestmt.stmt.accept(this);
+        }
+        return null;
+    }
+
+    ///////////
+    // Helper methods 
+    ///////////
 
     Environment getEnv() {
         return env;
