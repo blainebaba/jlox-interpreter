@@ -1,4 +1,4 @@
-package com.blaine.lox;
+package com.blaine.lox.interpreter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.blaine.lox.Scanner;
+import com.blaine.lox.Token;
 import com.blaine.lox.interpreter.Interpreter;
 import com.blaine.lox.interpreter.RuntimeError;
 import com.blaine.lox.parser.Parser;

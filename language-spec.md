@@ -37,7 +37,7 @@ Features required by book.
     * single line comment uses `//`
     * statement block noted by `{` and `}`
     * dynamic type, variables noted by `var`
-    * assignment: "var a = 1;"
+    * variable declaration: "var a = 1;"
     * `print` keyword: ' print "hello world"; ', no parentheses.
     * control flow, same format as java
         * `if`, `else`
@@ -118,10 +118,14 @@ PRIMARY -> STRING|NUMBER|IDENTIFIER|"true"|"false"|nil|"(" EXPR ")"
 Implement parser is basically converting these rules into code.
 
 ### Statement parsing rules
-PROGRAM -> STATEMENT* "EOF"
-STATEMENT -> EXPR_STMT | PRINT_STMT
+PROGRAM -> RELAX_STMT* "EOF"
+RELAX_STMT -> DECLARE_STMT | STRICT_STMT
+STRICT_STMT -> EXPR_STMT | PRINT_STMT
+DECLARE_STMT -> "var" IDENTIFIER ("=" EXPR)? ";"
 EXPR_STMT -> EXPR ";"
 PRINT_STMT -> "print" EXPR ";"
+
+RELAX_STMT is introduced to exclude DECLARE_STMT from some use cases.
 
 ## Notes
 * notice type mismatch in expression parsing will not throw parser error. This is because lox is dynamic type language, so type mis-match is a runtime error.

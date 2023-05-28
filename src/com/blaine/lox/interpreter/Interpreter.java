@@ -4,6 +4,7 @@ import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
+import com.blaine.lox.generated.Stmt.DeclareStmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
 import com.blaine.lox.generated.Stmt.PrintStmt;
 import com.blaine.lox.Token;
@@ -17,6 +18,12 @@ import static com.blaine.lox.Token.TokenType.*;
 import java.util.Arrays;
 
 public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
+
+    private Environment env;
+
+    public Interpreter() {
+        this.env = new Environment();
+    }
 
     public void execute(Stmt stmt) {
         stmt.accept(this);
@@ -170,4 +177,17 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitDeclareStmt(DeclareStmt declarestmt) {
+        Object initValue = null;
+        if (declarestmt.expression != null) {
+            initValue = declarestmt.expression.accept(this);
+        }
+        env.declareGlobalVar(declarestmt.varName, initValue);
+        return null;
+    }
+
+    Environment getEnv() {
+        return env;
+    }
 }

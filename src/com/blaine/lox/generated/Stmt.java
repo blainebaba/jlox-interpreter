@@ -34,4 +34,20 @@ public interface Stmt {
         }
     }
 
+    public static class DeclareStmt implements Stmt{
+
+        public final String varName;
+        public final Expr expression;
+
+        public DeclareStmt(String varName,Expr expression) {
+            this.varName = varName;
+            this.expression = expression;
+        }
+
+        @Override
+        public <R> R accept(StmtVisitor<R> visitor){
+            return visitor.visitDeclareStmt(this);
+        }
+    }
+
 }

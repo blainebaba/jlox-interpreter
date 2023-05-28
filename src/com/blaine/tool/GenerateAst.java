@@ -34,14 +34,15 @@ public class GenerateAst {
         defineAst("com/blaine/lox/generated", "Stmt", 
             Arrays.asList(
                 "Expression:Expr expression",
-                "Print:Expr expression"
+                "Print:Expr expression",
+                "Declare:String varName,Expr expression"
             ), 
             Arrays.asList()
         );
 
         // defines expression visitor
         defineVisitor("com/blaine/lox/generated", "Stmt", Arrays.asList(
-            "Expression", "Print"
+            "Expression", "Print", "Declare"
         ));
     }
 
