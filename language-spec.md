@@ -78,6 +78,7 @@ These are not required by the specification (the book).
     * `switch`
     * multile comments use `/*` and `*/`
     * For `+`, implicit convert to string type when one operand is string.
+    * `break` and `continue`
 * scanner
     * record column of each token
 * parser

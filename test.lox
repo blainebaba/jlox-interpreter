@@ -1,0 +1,14 @@
+// print first 10 Fibonacci number
+var prev = 0;
+var cur = 1;
+
+var count = 0;
+while (count < 10) {
+    print prev;
+
+    var newValue = cur + prev;
+    prev = cur;
+    cur = newValue;
+
+    count = count + 1;
+}
