@@ -30,9 +30,6 @@ public class Parser {
         return exprParser.expression();
     }
 
-    public static class ParserException extends RuntimeException {
-    }
-
     /////////////////
     // Helper methods
     /////////////////
@@ -58,7 +55,7 @@ public class Parser {
         if (!isEnd() && expectedTypeList.contains(cur().type)) {
             return consume();
         } else {
-            throw new ParserException();
+            throw new ParserError();
         }
     }
 

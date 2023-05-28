@@ -9,7 +9,6 @@ import com.blaine.lox.generated.Expr.Binary;
 import com.blaine.lox.generated.Expr.Grouping;
 import com.blaine.lox.generated.Expr.Literal;
 import com.blaine.lox.generated.Expr.Unary;
-import com.blaine.lox.parser.Parser.ParserException;
 
 import static com.blaine.lox.Token.TokenType.*;
 
@@ -64,6 +63,7 @@ public class ExprParser {
     private Expr primary() {
         if (p.peek(IDENTIFIER)) {
             // we are not able to read variable value yet, return identifier name
+            // TODO
             return new Literal(p.consume().literalValue);
         } else if (p.peek(NUMBER, STRING)) {
             return new Literal(p.consume().literalValue);
@@ -76,10 +76,13 @@ public class ExprParser {
         } else if (p.peek(LEFT_PAREN)){
             p.consume();
             Expr expr = expression();
-            p.match(RIGHT_BRACE);
+            p.match(RIGHT_PAREN);
             return new Grouping(expr);
+        } else if (p.peek(NIL)) {
+            p.consume();
+            return new Literal(null);
         } else {
-            throw new ParserException();
+            throw new ParserError();
         }
     }
 

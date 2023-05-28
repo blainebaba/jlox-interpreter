@@ -55,14 +55,6 @@ public class Token {
             this.lexeme = null;
         }
 
-        boolean match(char ch) {
-            return lexeme != null && lexeme.length() == 1 && lexeme.charAt(0) == ch;
-        }
-
-        boolean match(String str) {
-            return lexeme != null && lexeme.equals(str);
-        }
-
         boolean isKeyword() {
             return lexeme != null && Utils.isAlpha(lexeme.charAt(0));
         }

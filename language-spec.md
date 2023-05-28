@@ -6,6 +6,7 @@
   - [Expression operators' precedence and associates](#expression-operators-precedence-and-associates)
   - [Expression Parsing Rules](#expression-parsing-rules)
 - [Notes](#notes)
+- [Questions](#questions)
 
 
 ## Language Features
@@ -14,6 +15,7 @@
 Features required by book.
 * data types
     * boolean: `true` or `false`
+      * implicit conversion: `false` and `nil` are `false`, anything else is `true`
     * number: in format "123" or "123.456"
     * string: enclosed by double quotes, in single line.
     * nil: represented by `nil`
@@ -26,6 +28,8 @@ Features required by book.
     * logical
         * `and`, `or`, `!`
     * grouping, use `(` and `)`
+    * String:
+      * `+` is used to concat two strings.
 * expressions precedence and association.
 * statements
     * statement ends with `;`
@@ -58,6 +62,10 @@ Features required by book.
     * clock(): return number of seconds since the program started.
 * scanner
     * record line number of each token
+* parser
+    * recursive descent parsing
+    * error recovery: continue parsing when meets error.
+
 
 ### Additional Features
 These are not required by the specification (the book).
@@ -86,6 +94,10 @@ Precedence from low to high.
 | `*` `/`           | multiply and divide | left-to-right |
 | `-` `!`           | negate, bool not    | right-to-left |
 
+Same precedence as C.
+
+(refer: [C language expression precedence](https://en.cppreference.com/w/c/language/operator_precedence))
+
 ### Expression Parsing Rules
 ```
 EXPR -> OR_TERM
@@ -99,10 +111,12 @@ UNARY_TERM -> ("!"|"-") UNARY_TERM | PRIMARY
 PRIMARY -> STRING|NUMBER|IDENTIFIER|"true"|"false"|nil|"(" EXPR ")"
 ```
 
-Same precedence as C.
-
-(refer: [C language expression precedence](https://en.cppreference.com/w/c/language/operator_precedence))
+Implement parser is basically converting these rules into code.
 
 ## Notes
+* notice type mismatch in expression parsing will not throw parser error. This is because lox is dynamic type language, so type mis-match is a runtime error.
+
+## Questions
 * How lox implements array?
 * I assume TAB always has size of 4 column, is that always true?
+* how is NaN (0/0) handled ?

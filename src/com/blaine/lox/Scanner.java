@@ -59,10 +59,8 @@ public class Scanner {
         // string literal
         if (match('"')) {
             while (!reachEnd() && !peek('"') && !peek('\n')) {
-                System.out.println(script.charAt(end));
                 advance(1);
             }
-            System.out.println(script.charAt(end));
             if (match('"')) {
                 addToken(STRING, script.substring(start+1, end-1));
             } else {
@@ -164,7 +162,6 @@ public class Scanner {
 
     // similar to match, but not advance end pointer
     private boolean peek(String lexeme) {
-        System.out.println(lexeme.length());
         int n = lexeme.length();
         if (end + n > script.length()) {
             return false;

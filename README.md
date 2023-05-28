@@ -1,1 +1,1 @@
-Interpreter of Lox language. https://craftinginterpreters.com/
+Interpreter of Lox language written in Java. https://craftinginterpreters.com/

@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.blaine.lox.evaluate.ExprEvaluator;
 import com.blaine.lox.generated.Expr;
 import com.blaine.lox.parser.Parser;
 
@@ -42,6 +43,8 @@ class Lox {
     private static void run(String script) {
         Scanner scanner = new Scanner(script);
         List<Token> tokens = scanner.scan();
+
+        // print tokens
         // printTokens(tokens);
 
         // parse
@@ -49,8 +52,12 @@ class Lox {
         Expr expr = parser.parse();
 
         // print expression
-        String notPrettyStr = expr.accept(new NotPrettyAstPrinter());
-        System.out.println(notPrettyStr);
+        // String notPrettyStr = expr.accept(new NotPrettyAstPrinter());
+        // System.out.println(notPrettyStr);
+
+        // evaluate expression
+        Object result = expr.accept(new ExprEvaluator());
+        System.out.println(result);
     }
 
     private static void printTokens(List<Token> tokens) {
