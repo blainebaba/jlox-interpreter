@@ -5,20 +5,28 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.blaine.lox.Scanner;
 import com.blaine.lox.Token;
-import com.blaine.lox.interpreter.Interpreter;
-import com.blaine.lox.interpreter.RuntimeError;
 import com.blaine.lox.parser.Parser;
 
 // test expression parse and evaluate
 public class ExprEvaluateTest {
 
+    private Interpreter interpreter;
+    private Environment env;
+
+    @Before
+    public void setup() {
+        interpreter = new Interpreter();
+        env = interpreter.getEnv();
+    }
+
     private Object evaluate(String expression) {
         List<Token> tokens = new Scanner(expression).scan();
-        return new Parser(tokens).parseExpression().accept(new Interpreter());
+        return new Parser(tokens).parseExpression().accept(interpreter);
     }
 
     @Test
@@ -88,6 +96,44 @@ public class ExprEvaluateTest {
         assertEquals(false, evaluate("nil or false"));
         assertEquals(true, evaluate("0 or false"));
         assertEquals(true, evaluate("\"\" or false"));
+    }
+
+    @Test
+    public void testEvaluateAssign() {
+        // happy case
+        {
+            env.declareGlobalVar("a", null);
+            assertEquals(1.0, evaluate("a = 1"));
+            assertEquals(1.0, env.getGlobalVar("a"));
+        }
+        // assign to undefined var
+        {
+            evaluateExpectError("b = 2");
+            assertEquals(null, env.getGlobalVar("b"));
+        }
+        // chain assignment
+        {
+            interpreter.getEnv().declareGlobalVar("c", null);
+            interpreter.getEnv().declareGlobalVar("d", null);
+            interpreter.getEnv().declareGlobalVar("e", null);
+            assertEquals(1.0, evaluate("c = d = e = 1"));
+            assertEquals(1.0, env.getGlobalVar("c"));
+            assertEquals(1.0, env.getGlobalVar("d"));
+            assertEquals(1.0, env.getGlobalVar("e"));
+        }
+    }
+
+    @Test
+    public void testEvaluateVariable() {
+        // exist global var 
+        {
+            interpreter.getEnv().declareGlobalVar("a", 1.0);
+            assertEquals(1.0, evaluate("a"));
+        }
+        // non-exist global var 
+        {
+            evaluateExpectError("b");
+        }
     }
 
     private void evaluateExpectError(String script) {

@@ -1,11 +1,12 @@
 package com.blaine.lox;
 
-import com.blaine.lox.Token.TokenType;
 import com.blaine.lox.generated.ExprVisitor;
+import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
+import com.blaine.lox.generated.Expr.VariableExpr;
 
 /**
  * Format Expr into a not quite pretty string.
@@ -13,8 +14,8 @@ import com.blaine.lox.generated.Expr.UnaryExpr;
 public class NotPrettyAstPrinter implements ExprVisitor<String> {
 
     @Override
-    public String visitBinaryExpr(BinaryExpr binaryexpr) {
-        return parantheses(binaryexpr.left.accept(this) + " " + binaryexpr.operator.lexeme + " " + binaryexpr.right.accept(this));
+    public String visitBinaryExpr(BinaryExpr binary) {
+        return parantheses(binary.left.accept(this) + " " + binary.operator.lexeme + " " + binary.right.accept(this));
     }
 
     @Override
@@ -32,18 +33,17 @@ public class NotPrettyAstPrinter implements ExprVisitor<String> {
         return literalexpr.value.toString();
     }
 
-    private String parantheses(String inner) {
-        return "(" + inner + ")";
+    @Override
+    public String visitVariableExpr(VariableExpr var) {
+        return var.varName;
     }
 
-    // Test
-    public static void main(String[] args) {
-        // 1 + 2 * 3
-        BinaryExpr binaryexpr1 = new BinaryExpr(new LiteralExpr(2), new Token(TokenType.STAR, 0, 0, "*"), new LiteralExpr("3"));
-        BinaryExpr binaryexpr2 = new BinaryExpr(new LiteralExpr(1), new Token(TokenType.PLUS, 0, 0, "+"), binaryexpr1);
+    @Override
+    public String visitAssignExpr(AssignExpr assignexpr) {
+        return parantheses(assignexpr.varName + " = " + assignexpr.expr.accept(this));
+    }
 
-        NotPrettyAstPrinter printer = new NotPrettyAstPrinter();
-        String result = binaryexpr2.accept(printer);
-        System.out.println(result);
+    private String parantheses(String inner) {
+        return "(" + inner + ")";
     }
 }

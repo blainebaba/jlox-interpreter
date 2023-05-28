@@ -5,10 +5,12 @@ import java.util.function.Supplier;
 import com.blaine.lox.Token;
 import com.blaine.lox.Token.TokenType;
 import com.blaine.lox.generated.Expr;
+import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
+import com.blaine.lox.generated.Expr.VariableExpr;
 
 import static com.blaine.lox.Token.TokenType.*;
 
@@ -25,7 +27,23 @@ public class ExprParser {
 
     // entrance of parsing expression 
     public Expr expression() {
-        return orTerm();
+        return assignTerm();
+    }
+
+    public Expr assignTerm() {
+        Expr left = orTerm();
+        if (p.peek(EQUAL)) {
+            if (left.getClass().equals(VariableExpr.class)) {
+                VariableExpr var = (VariableExpr)left;
+                Token equal = p.consume();
+                Expr right = assignTerm();
+                return new AssignExpr(var.varName, var.token, equal, right);
+            } else {
+                Token equal = p.cur();
+                throw new ParserError("Invalid assignment target.", equal.line, equal.column);
+            }
+        }
+        return left;
     }
 
     private Expr orTerm() {
@@ -62,25 +80,25 @@ public class ExprParser {
 
     private Expr primary() {
         if (p.peek(IDENTIFIER)) {
-            // we are not able to read variable value yet, return identifier name
-            // TODO
-            return new LiteralExpr(p.consume().literalValue);
+            Token var = p.consume();
+            return new VariableExpr((String)var.literalValue, var);
         } else if (p.peek(NUMBER, STRING)) {
-            return new LiteralExpr(p.consume().literalValue);
+            Token token = p.consume();
+            return new LiteralExpr(token.literalValue, token);
         } else if (p.peek(TRUE)) {
-            p.consume();
-            return new LiteralExpr(true);
+            Token token = p.consume();
+            return new LiteralExpr(true, token);
         } else if (p.peek(FALSE)) {
-            p.consume();
-            return new LiteralExpr(false);
+            Token token = p.consume();
+            return new LiteralExpr(false, token);
         } else if (p.peek(LEFT_PAREN)){
             p.consume();
             Expr expr = expression();
             p.match(RIGHT_PAREN);
             return new GroupingExpr(expr);
         } else if (p.peek(NIL)) {
-            p.consume();
-            return new LiteralExpr(null);
+            Token token = p.consume();
+            return new LiteralExpr(null, token);
         } else {
             throw new ParserError(String.format("Unexpected token '%s'", p.cur().lexeme), p.cur().line, p.cur().column);
         }

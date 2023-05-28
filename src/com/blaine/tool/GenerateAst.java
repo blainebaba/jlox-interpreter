@@ -18,7 +18,9 @@ public class GenerateAst {
                 "Binary:Expr left,Token operator,Expr right",
                 "Unary:Token operator,Expr expr",
                 "Grouping:Expr expr",
-                "Literal:Object value"
+                "Literal:Object value,Token token",
+                "Variable:String varName,Token token",
+                "Assign:String varName,Token var,Token equal,Expr expr"
             ), 
             Arrays.asList(
                 "com.blaine.lox.Token"
@@ -27,7 +29,7 @@ public class GenerateAst {
 
         // defines expression visitor
         defineVisitor("com/blaine/lox/generated", "Expr", Arrays.asList(
-            "Binary", "Unary", "Grouping", "Literal"
+            "Binary", "Unary", "Grouping", "Literal", "Variable", "Assign"
         ));
 
         // defines statement

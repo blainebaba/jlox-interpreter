@@ -1,9 +1,11 @@
 package com.blaine.lox.interpreter;
 
+import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
+import com.blaine.lox.generated.Expr.VariableExpr;
 import com.blaine.lox.generated.Stmt.DeclareStmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
 import com.blaine.lox.generated.Stmt.PrintStmt;
@@ -34,23 +36,30 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     ///////////////
 
     @Override
-    public Object visitBinaryExpr(BinaryExpr binaryexpr) {
-        Token operator = binaryexpr.operator;
+    public Object visitAssignExpr(AssignExpr assign) {
+        Object value = assign.expr.accept(this);
+        env.assignGlobalVar(assign.varName, value, assign.var);
+        return value;
+    }
+
+    @Override
+    public Object visitBinaryExpr(BinaryExpr binary) {
+        Token operator = binary.operator;
         TokenType opType = operator.type;
 
         // AND and OR are special because they don't always evaluate both operands.
         if (opType == AND) {
-            boolean left = toBoolean(binaryexpr.left.accept(this));
-            return left ? toBoolean(binaryexpr.right.accept(this)) : false;
+            boolean left = toBoolean(binary.left.accept(this));
+            return left ? toBoolean(binary.right.accept(this)) : false;
         }else if (opType == OR) {
-            boolean left = toBoolean(binaryexpr.left.accept(this));
-            return left ? true : toBoolean(binaryexpr.right.accept(this));
+            boolean left = toBoolean(binary.left.accept(this));
+            return left ? true : toBoolean(binary.right.accept(this));
         } 
 
         // others
         {
-            Object left = binaryexpr.left.accept(this);
-            Object right = binaryexpr.right.accept(this);
+            Object left = binary.left.accept(this);
+            Object right = binary.right.accept(this);
 
             switch (opType) {
                 case PLUS:
@@ -101,9 +110,9 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     }
 
     @Override
-    public Object visitUnaryExpr(UnaryExpr unaryexpr) {
-        Object value = unaryexpr.expr.accept(this);
-        Token op = unaryexpr.operator;
+    public Object visitUnaryExpr(UnaryExpr unary) {
+        Object value = unary.expr.accept(this);
+        Token op = unary.operator;
         // arithmetic
         if (op.type == MINUS) {
             checkUnaryExprOperandType(value, op, Double.class);
@@ -119,13 +128,18 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     }
 
     @Override
-    public Object visitGroupingExpr(GroupingExpr groupingexpr) {
-        return groupingexpr.expr.accept(this);
+    public Object visitGroupingExpr(GroupingExpr group) {
+        return group.expr.accept(this);
     }
 
     @Override
-    public Object visitLiteralExpr(LiteralExpr literalexpr) {
-        return literalexpr.value;
+    public Object visitLiteralExpr(LiteralExpr literal) {
+        return literal.value;
+    }
+
+    @Override
+    public Object visitVariableExpr(VariableExpr var) {
+        return env.evaluateGlobalVar(var.varName, var.token);
     }
 
     private void checkBinaryExprOperandType(Object left, Object right, Token operator, Class<?> ... types) {
@@ -164,26 +178,26 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     ///////////
 
     @Override
-    public Void visitExpressionStmt(ExpressionStmt expressionstmt) {
+    public Void visitExpressionStmt(ExpressionStmt stmt) {
         // ignore result
-        expressionstmt.expression.accept(this);
+        stmt.expression.accept(this);
         return null;
     }
 
     @Override
-    public Void visitPrintStmt(PrintStmt printstmt) {
-        Object result = printstmt.expression.accept(this);
+    public Void visitPrintStmt(PrintStmt stmt) {
+        Object result = stmt.expression.accept(this);
         System.out.println(result);
         return null;
     }
 
     @Override
-    public Void visitDeclareStmt(DeclareStmt declarestmt) {
+    public Void visitDeclareStmt(DeclareStmt stmt) {
         Object initValue = null;
-        if (declarestmt.expression != null) {
-            initValue = declarestmt.expression.accept(this);
+        if (stmt.expression != null) {
+            initValue = stmt.expression.accept(this);
         }
-        env.declareGlobalVar(declarestmt.varName, initValue);
+        env.declareGlobalVar(stmt.varName, initValue);
         return null;
     }
 

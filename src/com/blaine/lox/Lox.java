@@ -27,22 +27,26 @@ class Lox {
 
     private static void runFile(String path) throws Exception {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes, Charset.defaultCharset()));
+        Interpreter interpreter = new Interpreter();
+        run(new String(bytes, Charset.defaultCharset()), interpreter);
     }
 
     private static void runPrompt() throws Exception {
         InputStreamReader reader = new InputStreamReader(System.in);
         BufferedReader bufferReader = new BufferedReader(reader); 
 
+        // interpreter stores states, create first.
+        Interpreter interpreter = new Interpreter();
+
         while (true) {
             System.out.print("> ");
             String line = bufferReader.readLine();
             if (line == null) break;
-            run(line);
+            run(line, interpreter);
         }
     }
 
-    private static void run(String script) {
+    private static void run(String script, Interpreter interpreter) {
         Scanner scanner = new Scanner(script);
         List<Token> tokens = scanner.scan();
 
@@ -60,7 +64,6 @@ class Lox {
         }
 
         // execute
-        Interpreter interpreter = new Interpreter();
         for (Stmt stmt : stmts) {
             try {
                 interpreter.execute(stmt);

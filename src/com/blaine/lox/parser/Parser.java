@@ -87,6 +87,19 @@ public class Parser {
         }
     }
 
+    // similar to peek, but instead of on cur token, looks far ahead.
+    boolean peekFar(int shift, TokenType ... expectedTypes) {
+        if (cur + shift >= tokens.size()) {
+            return false;
+        }
+        List<TokenType> expectedTypeList = Arrays.asList(expectedTypes);
+        if (expectedTypeList.contains(tokens.get(cur + shift).type)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Check whether current token matches given types, consume token if type matches.
      * @param types

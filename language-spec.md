@@ -38,6 +38,7 @@ Features required by book.
     * statement block noted by `{` and `}`
     * dynamic type, variables noted by `var`
     * variable declaration: "var a = 1;"
+    * value assignment: "a = 1 +2;", the assigned variable must be declared.
     * `print` keyword: ' print "hello world"; ', no parentheses.
     * control flow, same format as java
         * `if`, `else`
@@ -104,7 +105,8 @@ Same precedence as C.
 
 ### Expression Parsing Rules
 ```
-EXPR -> OR_TERM
+EXPR -> ASSIGN_TERM
+ASSIGN_TERM -> IDENTIFIER "=" ASSIGN_TERM | OR_TERM
 OR_TERM -> AND_TERM ("or" AND_TERM)*
 AND_TERM -> EQUAL_TERM ("and" EQUAL_TERM)*
 EQUAL_TERM -> COMP_TERM (("=="|"!=") COMP_TERM)*
