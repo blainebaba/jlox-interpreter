@@ -82,7 +82,7 @@ public class ExprParser {
             p.consume();
             return new LiteralExpr(null);
         } else {
-            throw new ParserError();
+            throw new ParserError(String.format("Unexpected token '%s'", p.cur().lexeme), p.cur().line, p.cur().column);
         }
     }
 

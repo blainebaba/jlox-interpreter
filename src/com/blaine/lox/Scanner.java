@@ -64,7 +64,7 @@ public class Scanner {
             if (match('"')) {
                 addToken(STRING, script.substring(start+1, end-1));
             } else {
-                throw new ScannerException("Expects double quote(\").", lineNumber, columnNumber);
+                throw new ScannerError("Expects double quote(\").", lineNumber, columnNumber);
             }
             return;
         }
@@ -115,7 +115,7 @@ public class Scanner {
         }
 
         // matched nothing, error 
-        throw new ScannerException(String.format("Unknown token '%s'.", Character.toString(ch)), lineNumber, columnNumber);
+        throw new ScannerError(String.format("Unknown token '%s'.", Character.toString(ch)), lineNumber, columnNumber);
     }
 
     // match string with keyword, add token and return true if keyword matched 
@@ -178,11 +178,5 @@ public class Scanner {
 
     private boolean reachEnd() {
         return end >= script.length();
-    }
-
-    public static class ScannerException extends RuntimeException {
-        public ScannerException(String msg, int lineNumber, int columnNumber) {
-            super(String.format("line %d column %d, %s", lineNumber, columnNumber, msg));
-        }
     }
 }

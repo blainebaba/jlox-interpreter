@@ -79,6 +79,8 @@ These are not required by the specification (the book).
     * For `+`, implicit convert to string type when one operand is string.
 * scanner
     * record column of each token
+* interpreter
+    * print stack trace
 
 ## Implementation
 

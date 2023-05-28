@@ -9,12 +9,16 @@ import com.blaine.lox.Token.TokenType;
 import com.blaine.lox.generated.Expr;
 import com.blaine.lox.generated.Stmt;
 
+import static com.blaine.lox.Token.TokenType.*;
+
 /**
  * Entrance of parser. Storing variables of parsing process.
  */
 public class Parser {
 
     private List<Token> tokens;
+    // stores all errors found
+    private List<ParserError> parserErrors;
     // index of current token
     private int cur;
 
@@ -27,13 +31,20 @@ public class Parser {
 
         this.exprParser = new ExprParser(this);
         this.stmtParser = new StmtParser(this);
+
+        this.parserErrors = new ArrayList<>();
     }
 
     // parse the whole program
     public List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while(!isEnd()) {
-            statements.add(parseStatement());
+            try {
+                statements.add(parseStatement());
+            } catch(ParserError e) {
+                parserErrors.add(e);
+                errorRecovery();
+            }
         }
         return statements;
     }
@@ -44,6 +55,21 @@ public class Parser {
 
     public Expr parseExpression() {
         return exprParser.expression();
+    }
+
+    public List<ParserError> getErrors() {
+        return parserErrors;
+    }
+
+    private void errorRecovery() {
+        while(!isEnd()) {
+            // skip current statement
+            if (peek(SEMICOLON)) {
+                consume();
+                return;
+            } 
+            consume();
+        }
     }
 
     /////////////////
@@ -71,7 +97,12 @@ public class Parser {
         if (!isEnd() && expectedTypeList.contains(cur().type)) {
             return consume();
         } else {
-            throw new ParserError();
+            if (isEnd()) {
+                throw new ParserError("Reaching end of file unexpected.");
+            } else {
+                // TODO: better error msg to help identify error.
+                throw new ParserError(String.format("Unexpected token '%s'", cur().lexeme), cur().line, cur().column);
+            }
         }
     }
 

@@ -8,9 +8,11 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.blaine.lox.evaluate.Interpreter;
 import com.blaine.lox.generated.Stmt;
+import com.blaine.lox.interpreter.Interpreter;
+import com.blaine.lox.interpreter.RuntimeError;
 import com.blaine.lox.parser.Parser;
+import com.blaine.lox.parser.ParserError;
 
 class Lox {
     public static void main(String[] args) throws Exception {
@@ -50,11 +52,21 @@ class Lox {
         // parse
         Parser parser = new Parser(tokens);
         List<Stmt> stmts = parser.parse();
+        if (parser.getErrors().size() > 0) {
+            for (ParserError error : parser.getErrors()) {
+                System.out.println(error.toString());
+            }
+            return;
+        }
 
         // execute
         Interpreter interpreter = new Interpreter();
         for (Stmt stmt : stmts) {
-            interpreter.execute(stmt);
+            try {
+                interpreter.execute(stmt);
+            } catch (RuntimeError e) {
+                System.out.println(e.toString());
+            }
         }
     }
 

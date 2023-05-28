@@ -7,8 +7,8 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.blaine.lox.evaluate.Interpreter;
-import com.blaine.lox.evaluate.RuntimeError;
+import com.blaine.lox.interpreter.Interpreter;
+import com.blaine.lox.interpreter.RuntimeError;
 import com.blaine.lox.parser.Parser;
 
 // test expression parse and evaluate

@@ -1,4 +1,4 @@
-package com.blaine.lox.evaluate;
+package com.blaine.lox.interpreter;
 
 import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;

@@ -8,10 +8,10 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.blaine.lox.evaluate.Interpreter;
 import com.blaine.lox.generated.Stmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
 import com.blaine.lox.generated.Stmt.PrintStmt;
+import com.blaine.lox.interpreter.Interpreter;
 import com.blaine.lox.parser.Parser;
 
 // test statement evaluation and execution
