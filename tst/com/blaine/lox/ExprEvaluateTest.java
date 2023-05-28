@@ -7,16 +7,16 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.blaine.lox.evaluate.ExprEvaluator;
+import com.blaine.lox.evaluate.Interpreter;
 import com.blaine.lox.evaluate.RuntimeError;
 import com.blaine.lox.parser.Parser;
 
-// test both parser and evaluator
-public class ExprParserTest {
+// test expression parse and evaluate
+public class ExprEvaluateTest {
 
     private Object evaluate(String expression) {
         List<Token> tokens = new Scanner(expression).scan();
-        return new Parser(tokens).parse().accept(new ExprEvaluator());
+        return new Parser(tokens).parseExpression().accept(new Interpreter());
     }
 
     @Test

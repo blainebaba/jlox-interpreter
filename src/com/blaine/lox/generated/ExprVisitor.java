@@ -1,15 +1,15 @@
 // Generated File
 package com.blaine.lox.generated;
 
-import com.blaine.lox.generated.Expr.Binary;
-import com.blaine.lox.generated.Expr.Unary;
-import com.blaine.lox.generated.Expr.Grouping;
-import com.blaine.lox.generated.Expr.Literal;
+import com.blaine.lox.generated.Expr.BinaryExpr;
+import com.blaine.lox.generated.Expr.UnaryExpr;
+import com.blaine.lox.generated.Expr.GroupingExpr;
+import com.blaine.lox.generated.Expr.LiteralExpr;
 
 public interface ExprVisitor<R> {
 
-    R visitBinary(Binary binary);
-    R visitUnary(Unary unary);
-    R visitGrouping(Grouping grouping);
-    R visitLiteral(Literal literal);
+    R visitBinaryExpr(BinaryExpr binaryexpr);
+    R visitUnaryExpr(UnaryExpr unaryexpr);
+    R visitGroupingExpr(GroupingExpr groupingexpr);
+    R visitLiteralExpr(LiteralExpr literalexpr);
 }

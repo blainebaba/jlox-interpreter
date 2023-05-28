@@ -8,8 +8,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.blaine.lox.evaluate.ExprEvaluator;
-import com.blaine.lox.generated.Expr;
+import com.blaine.lox.evaluate.Interpreter;
+import com.blaine.lox.generated.Stmt;
 import com.blaine.lox.parser.Parser;
 
 class Lox {
@@ -49,15 +49,13 @@ class Lox {
 
         // parse
         Parser parser = new Parser(tokens);
-        Expr expr = parser.parse();
+        List<Stmt> stmts = parser.parse();
 
-        // print expression
-        // String notPrettyStr = expr.accept(new NotPrettyAstPrinter());
-        // System.out.println(notPrettyStr);
-
-        // evaluate expression
-        Object result = expr.accept(new ExprEvaluator());
-        System.out.println(result);
+        // execute
+        Interpreter interpreter = new Interpreter();
+        for (Stmt stmt : stmts) {
+            interpreter.execute(stmt);
+        }
     }
 
     private static void printTokens(List<Token> tokens) {

@@ -7,13 +7,13 @@ public interface Expr {
 
     <R> R accept(ExprVisitor<R> visitor);
 
-    public static class Binary implements Expr{
+    public static class BinaryExpr implements Expr{
 
         public final Expr left;
         public final Token operator;
         public final Expr right;
 
-        public Binary(Expr left,Token operator,Expr right) {
+        public BinaryExpr(Expr left,Token operator,Expr right) {
             this.left = left;
             this.operator = operator;
             this.right = right;
@@ -21,51 +21,51 @@ public interface Expr {
 
         @Override
         public <R> R accept(ExprVisitor<R> visitor){
-            return visitor.visitBinary(this);
+            return visitor.visitBinaryExpr(this);
         }
     }
 
-    public static class Unary implements Expr{
+    public static class UnaryExpr implements Expr{
 
         public final Token operator;
         public final Expr expr;
 
-        public Unary(Token operator,Expr expr) {
+        public UnaryExpr(Token operator,Expr expr) {
             this.operator = operator;
             this.expr = expr;
         }
 
         @Override
         public <R> R accept(ExprVisitor<R> visitor){
-            return visitor.visitUnary(this);
+            return visitor.visitUnaryExpr(this);
         }
     }
 
-    public static class Grouping implements Expr{
+    public static class GroupingExpr implements Expr{
 
         public final Expr expr;
 
-        public Grouping(Expr expr) {
+        public GroupingExpr(Expr expr) {
             this.expr = expr;
         }
 
         @Override
         public <R> R accept(ExprVisitor<R> visitor){
-            return visitor.visitGrouping(this);
+            return visitor.visitGroupingExpr(this);
         }
     }
 
-    public static class Literal implements Expr{
+    public static class LiteralExpr implements Expr{
 
         public final Object value;
 
-        public Literal(Object value) {
+        public LiteralExpr(Object value) {
             this.value = value;
         }
 
         @Override
         public <R> R accept(ExprVisitor<R> visitor){
-            return visitor.visitLiteral(this);
+            return visitor.visitLiteralExpr(this);
         }
     }
 

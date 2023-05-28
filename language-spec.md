@@ -5,6 +5,7 @@
 - [Implementation](#implementation)
   - [Expression operators' precedence and associates](#expression-operators-precedence-and-associates)
   - [Expression Parsing Rules](#expression-parsing-rules)
+  - [Statement parsing rules](#statement-parsing-rules)
 - [Notes](#notes)
 - [Questions](#questions)
 
@@ -75,6 +76,7 @@ These are not required by the specification (the book).
     * `elif`
     * `switch`
     * multile comments use `/*` and `*/`
+    * For `+`, implicit convert to string type when one operand is string.
 * scanner
     * record column of each token
 
@@ -113,10 +115,17 @@ PRIMARY -> STRING|NUMBER|IDENTIFIER|"true"|"false"|nil|"(" EXPR ")"
 
 Implement parser is basically converting these rules into code.
 
+### Statement parsing rules
+PROGRAM -> STATEMENT* "EOF"
+STATEMENT -> EXPR_STMT | PRINT_STMT
+EXPR_STMT -> EXPR ";"
+PRINT_STMT -> "print" EXPR ";"
+
 ## Notes
 * notice type mismatch in expression parsing will not throw parser error. This is because lox is dynamic type language, so type mis-match is a runtime error.
 
 ## Questions
 * How lox implements array?
 * I assume TAB always has size of 4 column, is that always true?
-* how is NaN (0/0) handled ?
+* how is divided by zero handled ?
+* why EOF token at the end of program? Without it seems fine.

@@ -1,11 +1,13 @@
 package com.blaine.lox.parser;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import com.blaine.lox.Token;
 import com.blaine.lox.Token.TokenType;
 import com.blaine.lox.generated.Expr;
+import com.blaine.lox.generated.Stmt;
 
 /**
  * Entrance of parser. Storing variables of parsing process.
@@ -17,16 +19,30 @@ public class Parser {
     private int cur;
 
     private ExprParser exprParser;
+    private StmtParser stmtParser;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
         this.cur = 0;
 
         this.exprParser = new ExprParser(this);
+        this.stmtParser = new StmtParser(this);
     }
 
-    public Expr parse() {
-        // temporary
+    // parse the whole program
+    public List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while(!isEnd()) {
+            statements.add(parseStatement());
+        }
+        return statements;
+    }
+
+    public Stmt parseStatement() {
+        return stmtParser.statement();
+    }
+
+    public Expr parseExpression() {
         return exprParser.expression();
     }
 
@@ -64,7 +80,7 @@ public class Parser {
         return tokens.get(cur++);
     }
 
-    boolean isEnd() {
+    public boolean isEnd() {
         return cur >= tokens.size();
     }
 

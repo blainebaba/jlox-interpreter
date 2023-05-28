@@ -2,10 +2,10 @@ package com.blaine.lox;
 
 import com.blaine.lox.Token.TokenType;
 import com.blaine.lox.generated.ExprVisitor;
-import com.blaine.lox.generated.Expr.Binary;
-import com.blaine.lox.generated.Expr.Grouping;
-import com.blaine.lox.generated.Expr.Literal;
-import com.blaine.lox.generated.Expr.Unary;
+import com.blaine.lox.generated.Expr.BinaryExpr;
+import com.blaine.lox.generated.Expr.GroupingExpr;
+import com.blaine.lox.generated.Expr.LiteralExpr;
+import com.blaine.lox.generated.Expr.UnaryExpr;
 
 /**
  * Format Expr into a not quite pretty string.
@@ -13,23 +13,23 @@ import com.blaine.lox.generated.Expr.Unary;
 public class NotPrettyAstPrinter implements ExprVisitor<String> {
 
     @Override
-    public String visitBinary(Binary binary) {
-        return parantheses(binary.left.accept(this) + " " + binary.operator.lexeme + " " + binary.right.accept(this));
+    public String visitBinaryExpr(BinaryExpr binaryexpr) {
+        return parantheses(binaryexpr.left.accept(this) + " " + binaryexpr.operator.lexeme + " " + binaryexpr.right.accept(this));
     }
 
     @Override
-    public String visitUnary(Unary unary) {
-        return parantheses(unary.operator.lexeme + " " + unary.expr.accept(this));
+    public String visitUnaryExpr(UnaryExpr unaryexpr) {
+        return parantheses(unaryexpr.operator.lexeme + " " + unaryexpr.expr.accept(this));
     }
 
     @Override
-    public String visitGrouping(Grouping grouping) {
-        return parantheses(grouping.expr.accept(this));
+    public String visitGroupingExpr(GroupingExpr groupingexpr) {
+        return parantheses(groupingexpr.expr.accept(this));
     }
 
     @Override
-    public String visitLiteral(Literal literal) {
-        return literal.value.toString();
+    public String visitLiteralExpr(LiteralExpr literalexpr) {
+        return literalexpr.value.toString();
     }
 
     private String parantheses(String inner) {
@@ -39,11 +39,11 @@ public class NotPrettyAstPrinter implements ExprVisitor<String> {
     // Test
     public static void main(String[] args) {
         // 1 + 2 * 3
-        Binary binary1 = new Binary(new Literal(2), new Token(TokenType.STAR, 0, 0, "*"), new Literal("3"));
-        Binary binary2 = new Binary(new Literal(1), new Token(TokenType.PLUS, 0, 0, "+"), binary1);
+        BinaryExpr binaryexpr1 = new BinaryExpr(new LiteralExpr(2), new Token(TokenType.STAR, 0, 0, "*"), new LiteralExpr("3"));
+        BinaryExpr binaryexpr2 = new BinaryExpr(new LiteralExpr(1), new Token(TokenType.PLUS, 0, 0, "+"), binaryexpr1);
 
         NotPrettyAstPrinter printer = new NotPrettyAstPrinter();
-        String result = binary2.accept(printer);
+        String result = binaryexpr2.accept(printer);
         System.out.println(result);
     }
 }

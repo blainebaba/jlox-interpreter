@@ -5,10 +5,10 @@ import java.util.function.Supplier;
 import com.blaine.lox.Token;
 import com.blaine.lox.Token.TokenType;
 import com.blaine.lox.generated.Expr;
-import com.blaine.lox.generated.Expr.Binary;
-import com.blaine.lox.generated.Expr.Grouping;
-import com.blaine.lox.generated.Expr.Literal;
-import com.blaine.lox.generated.Expr.Unary;
+import com.blaine.lox.generated.Expr.BinaryExpr;
+import com.blaine.lox.generated.Expr.GroupingExpr;
+import com.blaine.lox.generated.Expr.LiteralExpr;
+import com.blaine.lox.generated.Expr.UnaryExpr;
 
 import static com.blaine.lox.Token.TokenType.*;
 
@@ -29,32 +29,32 @@ public class ExprParser {
     }
 
     private Expr orTerm() {
-        return leftBinaryRule(this::andTerm, OR);
+        return leftBinaryExprRule(this::andTerm, OR);
     }
 
     private Expr andTerm() {
-        return leftBinaryRule(this::equalTerm, AND);
+        return leftBinaryExprRule(this::equalTerm, AND);
     }
 
     private Expr equalTerm() {
-        return leftBinaryRule(this::compareTerm, EQUAL_EQAUL, NOT_EQUAL);
+        return leftBinaryExprRule(this::compareTerm, EQUAL_EQAUL, NOT_EQUAL);
     }
 
     private Expr compareTerm() {
-        return leftBinaryRule(this::addTerm, LESSER, GREATER, LESS_EQUAL, GREATER_EQUAL);
+        return leftBinaryExprRule(this::addTerm, LESSER, GREATER, LESS_EQUAL, GREATER_EQUAL);
     }
 
     private Expr addTerm() {
-        return leftBinaryRule(this::mulTerm, PLUS, MINUS);
+        return leftBinaryExprRule(this::mulTerm, PLUS, MINUS);
     }
 
     private Expr mulTerm() {
-        return leftBinaryRule(this::unaryTerm, STAR, SLASH);
+        return leftBinaryExprRule(this::unaryexprTerm, STAR, SLASH);
     }
 
-    private Expr unaryTerm() {
+    private Expr unaryexprTerm() {
         if (p.peek(MINUS, EXCLAM)) {
-            return new Unary(p.consume(), unaryTerm());
+            return new UnaryExpr(p.consume(), unaryexprTerm());
         } else {
             return primary();
         }
@@ -64,36 +64,36 @@ public class ExprParser {
         if (p.peek(IDENTIFIER)) {
             // we are not able to read variable value yet, return identifier name
             // TODO
-            return new Literal(p.consume().literalValue);
+            return new LiteralExpr(p.consume().literalValue);
         } else if (p.peek(NUMBER, STRING)) {
-            return new Literal(p.consume().literalValue);
+            return new LiteralExpr(p.consume().literalValue);
         } else if (p.peek(TRUE)) {
             p.consume();
-            return new Literal(true);
+            return new LiteralExpr(true);
         } else if (p.peek(FALSE)) {
             p.consume();
-            return new Literal(false);
+            return new LiteralExpr(false);
         } else if (p.peek(LEFT_PAREN)){
             p.consume();
             Expr expr = expression();
             p.match(RIGHT_PAREN);
-            return new Grouping(expr);
+            return new GroupingExpr(expr);
         } else if (p.peek(NIL)) {
             p.consume();
-            return new Literal(null);
+            return new LiteralExpr(null);
         } else {
             throw new ParserError();
         }
     }
 
     /**
-     * left associates binary operator rule
+     * left associates binaryexpr operator rule
      */
-    private Expr leftBinaryRule(Supplier<Expr> nextRule, TokenType ... ops) {
+    private Expr leftBinaryExprRule(Supplier<Expr> nextRule, TokenType ... ops) {
         Expr expr = nextRule.get();
         while (p.peek(ops)) {
             Token operator = p.consume();
-            expr = new Binary(expr, operator, nextRule.get());
+            expr = new BinaryExpr(expr, operator, nextRule.get());
         }
         return expr;
     }
