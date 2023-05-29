@@ -89,6 +89,16 @@ public class InterpreterTest {
         assertEquals(2.0, env.getVar("b"));
     }
 
+    @Test
+    public void testBuiltInFunctions() throws Exception {
+        execute(parseStmts("var a = clock();"));
+        Thread.sleep(1000);
+        execute(parseStmts("var b = clock();"));
+        double t1 = (double)env.getVar("a");
+        double t2 = (double)env.getVar("b");
+        assertEquals(1.0, (t2 - t1), 0.1);
+    }
+
     private List<Stmt> parseStmts(String script) {
         List<Token> tokens = new Scanner(script).scan();
         Parser parser = new Parser(tokens);

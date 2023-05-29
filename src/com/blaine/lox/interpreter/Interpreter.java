@@ -31,13 +31,30 @@ import java.util.stream.Collectors;
 
 public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
 
-    // root env
+    // stores built-in vars/functions
+    private Environment builtinEnv;
+    // outer most scope
     private Environment rootEnv;
     private Environment curEnv;
 
     public Interpreter() {
-        this.rootEnv = new Environment(null);
+        this.builtinEnv = new Environment(null);
+        this.rootEnv = new Environment(builtinEnv);
         this.curEnv = rootEnv;
+
+        // defines built-in functions
+
+        // epoch time in seconds
+        builtinEnv.declareVar("clock", new LoxCallable() {
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                return System.currentTimeMillis() / 1000.0;
+            }
+            @Override
+            public int paramSize() {
+                return 0;
+            }
+        });
     }
 
     public void execute(Stmt stmt) {
