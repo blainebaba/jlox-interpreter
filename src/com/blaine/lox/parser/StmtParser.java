@@ -7,8 +7,10 @@ import com.blaine.lox.generated.Stmt.PrintStmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
 import com.blaine.lox.generated.Stmt.BlockStmt;
 import com.blaine.lox.generated.Stmt.DeclareStmt;
+import com.blaine.lox.generated.Stmt.DecFunStmt;
 import com.blaine.lox.generated.Stmt.IfStmt;
 import com.blaine.lox.generated.Stmt.WhileStmt;
+import com.blaine.lox.generated.Stmt.ReturnStmt;
 
 import static com.blaine.lox.Token.TokenType.*;
 
@@ -32,8 +34,12 @@ public class StmtParser {
 
     private Stmt relaxStmt() {
         if (p.peek(VAR)) {
-            return declareStmt();
-        } else {
+            return decVarStmt();
+        } 
+        if (p.peek(FUN)) {
+            return decFunStmt();
+        }
+        else {
             return strictStmt();
         }
     }
@@ -54,12 +60,15 @@ public class StmtParser {
         else if (p.peek(FOR)) {
             return forStmt();
         }
+        else if (p.peek(RETURN)) {
+            return returnStmt();
+        }
         else {
             return exprStmt();
         }
     }
 
-    private Stmt declareStmt() {
+    private Stmt decVarStmt() {
         p.match(VAR);
         Token id = p.match(IDENTIFIER);
         Expr initializer = null;
@@ -69,6 +78,31 @@ public class StmtParser {
         }
         p.match(SEMICOLON);
         return new DeclareStmt((String)id.literalValue, initializer);
+    }
+
+    private Stmt decFunStmt() {
+        p.match(FUN);
+        Token funName = p.match(IDENTIFIER);
+
+        List<Token> params = new ArrayList<>();
+        p.match(LEFT_PAREN);
+        if (!p.peek(RIGHT_PAREN)) {
+            params.add(p.match(IDENTIFIER));
+            while (p.peek(COMMA)) {
+                p.match(COMMA);
+                params.add(p.match(IDENTIFIER));
+            }
+        }
+        p.match(RIGHT_PAREN);
+
+        List<Stmt> stmts = new ArrayList<>();
+        p.match(LEFT_BRACE);
+        while (!p.peek(RIGHT_BRACE)) {
+            stmts.add(p.parseStatement());
+        }
+        p.match(RIGHT_BRACE);
+
+        return new DecFunStmt(funName, params, stmts);
     }
 
     private Stmt printStmt() {
@@ -129,7 +163,7 @@ public class StmtParser {
             declare = null;
         }
         else if (p.peek(VAR)) {
-            declare = declareStmt();
+            declare = decVarStmt();
         } 
         else {
             declare = exprStmt();
@@ -167,5 +201,15 @@ public class StmtParser {
             result = new BlockStmt(Arrays.asList(declare, result));
         }
         return result;
+    }
+
+    private Stmt returnStmt() {
+        Token token = p.match(RETURN);
+        Expr expr = null;
+        if (!p.peek(SEMICOLON)) {
+            expr = p.parseExpression();
+        }
+        p.match(SEMICOLON);
+        return new ReturnStmt(expr, token);
     }
 }

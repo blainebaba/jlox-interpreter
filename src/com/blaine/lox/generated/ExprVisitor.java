@@ -7,6 +7,7 @@ import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
 import com.blaine.lox.generated.Expr.AssignExpr;
+import com.blaine.lox.generated.Expr.CallExpr;
 
 public interface ExprVisitor<R> {
 
@@ -16,4 +17,5 @@ public interface ExprVisitor<R> {
     R visitLiteralExpr(LiteralExpr literalexpr);
     R visitVariableExpr(VariableExpr variableexpr);
     R visitAssignExpr(AssignExpr assignexpr);
+    R visitCallExpr(CallExpr callexpr);
 }

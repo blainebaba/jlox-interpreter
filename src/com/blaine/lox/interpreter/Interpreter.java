@@ -2,25 +2,32 @@ package com.blaine.lox.interpreter;
 
 import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
+import com.blaine.lox.generated.Expr.CallExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
 import com.blaine.lox.generated.Stmt.BlockStmt;
+import com.blaine.lox.generated.Stmt.DecFunStmt;
 import com.blaine.lox.generated.Stmt.DeclareStmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
 import com.blaine.lox.generated.Stmt.IfStmt;
 import com.blaine.lox.generated.Stmt.PrintStmt;
+import com.blaine.lox.generated.Stmt.ReturnStmt;
 import com.blaine.lox.generated.Stmt.WhileStmt;
 import com.blaine.lox.Token;
 import com.blaine.lox.Token.TokenType;
+import com.blaine.lox.generated.Expr;
 import com.blaine.lox.generated.ExprVisitor;
 import com.blaine.lox.generated.Stmt;
 import com.blaine.lox.generated.StmtVisitor;
 
 import static com.blaine.lox.Token.TokenType.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
 
@@ -35,6 +42,22 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
 
     public void execute(Stmt stmt) {
         stmt.accept(this);
+    }
+
+    // execute statment using given env
+    public void execute(Stmt stmt, Environment env) {
+        // preserve env
+        // it is single threaded so it is fine.
+        Environment oldEnv = curEnv;
+        curEnv = env;
+
+        try {
+            stmt.accept(this);
+        } finally {
+            // restore env
+            curEnv = oldEnv;
+        }
+
     }
 
     ///////////////
@@ -134,6 +157,30 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     }
 
     @Override
+    public Object visitCallExpr(CallExpr call) {
+        // this should evaluate to a Callable
+        Object fun = call.fun.accept(this);
+        Token callToken = call.call;
+
+        if (!(fun instanceof LoxCallable)) {
+            throw new RuntimeError("Call a non-function value.", callToken.line, callToken.column);
+        }
+
+        List<Object> args = new ArrayList<>();
+        for (Expr arg : call.args) {
+            args.add(arg.accept(this));
+        }
+
+        LoxCallable funCallable = (LoxCallable)fun;
+
+        if (args.size() != funCallable.paramSize()) {
+            throw new RuntimeError("Function call with incorrect number of arguments.", callToken.line, callToken.column);
+        }
+
+        return ((LoxCallable)fun).call(this, args);
+    }
+
+    @Override
     public Object visitGroupingExpr(GroupingExpr group) {
         return group.expr.accept(this);
     }
@@ -208,6 +255,15 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     }
 
     @Override
+    public Void visitDecFunStmt(DecFunStmt declare) {
+        String funName = (String)declare.funName.literalValue;
+        List<String> params = declare.params.stream().map(t -> (String)t.literalValue).collect(Collectors.toList());
+        LoxFunction function = new LoxFunction(funName, params, declare.stmts, curEnv);
+        curEnv.declareVar(funName, function);
+        return null;
+    }
+
+    @Override
     public Void visitBlockStmt(BlockStmt blockstmt) {
         // TODO lexical scope
         pushEnv();
@@ -235,6 +291,15 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
             whilestmt.stmt.accept(this);
         }
         return null;
+    }
+
+    @Override
+    public Void visitReturnStmt(ReturnStmt stmt) {
+        Object value = null;
+        if (stmt.value != null) {
+            value = stmt.value.accept(this);
+        }
+        throw new ReturnThrowable(value, stmt.token);
     }
 
     ///////////

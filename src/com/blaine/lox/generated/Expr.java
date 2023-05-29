@@ -2,6 +2,7 @@
 package com.blaine.lox.generated;
 
 import com.blaine.lox.Token;
+import java.util.List;
 
 public interface Expr {
 
@@ -104,6 +105,24 @@ public interface Expr {
         @Override
         public <R> R accept(ExprVisitor<R> visitor){
             return visitor.visitAssignExpr(this);
+        }
+    }
+
+    public static class CallExpr implements Expr{
+
+        public final Expr fun;
+        public final Token call;
+        public final List<Expr> args;
+
+        public CallExpr(Expr fun,Token call,List<Expr> args) {
+            this.fun = fun;
+            this.call = call;
+            this.args = args;
+        }
+
+        @Override
+        public <R> R accept(ExprVisitor<R> visitor){
+            return visitor.visitCallExpr(this);
         }
     }
 

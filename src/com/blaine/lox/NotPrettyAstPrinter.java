@@ -3,6 +3,7 @@ package com.blaine.lox;
 import com.blaine.lox.generated.ExprVisitor;
 import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
+import com.blaine.lox.generated.Expr.CallExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
@@ -43,7 +44,14 @@ public class NotPrettyAstPrinter implements ExprVisitor<String> {
         return parantheses(assignexpr.varName + " = " + assignexpr.expr.accept(this));
     }
 
+    @Override
+    public String visitCallExpr(CallExpr call) {
+        // TODO
+        return "";
+    }
+
     private String parantheses(String inner) {
         return "(" + inner + ")";
     }
+
 }

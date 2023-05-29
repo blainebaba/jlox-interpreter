@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.blaine.lox.generated.Stmt;
 import com.blaine.lox.interpreter.Interpreter;
+import com.blaine.lox.interpreter.ReturnThrowable;
 import com.blaine.lox.interpreter.RuntimeError;
 import com.blaine.lox.parser.Parser;
 import com.blaine.lox.parser.ParserError;
@@ -64,12 +65,16 @@ class Lox {
         }
 
         // execute
-        for (Stmt stmt : stmts) {
+        try {
             try {
-                interpreter.execute(stmt);
-            } catch (RuntimeError e) {
-                System.out.println(e.toString());
+                for (Stmt stmt : stmts) {
+                    interpreter.execute(stmt);
+                }
+            } catch (ReturnThrowable e) {
+                throw new RuntimeError("Return statement outside function.", e.token.line, e.token.column);
             }
+        } catch (RuntimeError e) {
+            System.out.println(e.toString());
         }
     }
 

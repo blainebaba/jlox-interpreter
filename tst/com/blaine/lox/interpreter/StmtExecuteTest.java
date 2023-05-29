@@ -23,11 +23,25 @@ public class StmtExecuteTest {
     // we can check internal states in interpreter to check correctness.
     private Interpreter interpreter;
     private Environment env;
+    private LoxCallable dummyFunction;
 
     @Before
     public void setup() {
         interpreter = new Interpreter();
         env = interpreter.getEnv();
+
+        dummyFunction = new LoxCallable() {
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                return args.get(0);
+            }
+
+            @Override
+            public int paramSize() {
+                return 1;
+            }
+        };
     }
 
     private Stmt parseOneStmt(String script) {
@@ -60,9 +74,17 @@ public class StmtExecuteTest {
 
     @Test
     public void testPrintStmt() {
-        Stmt stmt = parseOneStmt("print 1 + 1;");
-        assertEquals(PrintStmt.class, stmt.getClass());
-        interpreter.execute(stmt);
+        {
+            Stmt stmt = parseOneStmt("print 1 + 1;");
+            assertEquals(PrintStmt.class, stmt.getClass());
+            interpreter.execute(stmt);
+        }
+        {
+            env.declareVar("foo", dummyFunction);
+            Stmt stmt = parseOneStmt("print foo(1);");
+            assertEquals(PrintStmt.class, stmt.getClass());
+            interpreter.execute(stmt);
+        }
     }
 
     @Test
@@ -88,6 +110,18 @@ public class StmtExecuteTest {
             parseExpectError("var 123 = 1;");
             parseExpectError("var 123 = print 123;");
             parseExpectError("var a == b;");
+        }
+    }
+
+    @Test
+    public void testDecFunStmt() {
+        // happy case
+        {
+            Stmt stmt = parseOneStmt("fun foo(a) {print a;}");
+            stmt.accept(interpreter);
+
+            Object fun = env.getVar("foo");
+            assertTrue(fun instanceof LoxFunction);
         }
     }
 
@@ -144,6 +178,26 @@ public class StmtExecuteTest {
         parseExpectError("for ()");
         parseExpectError("for (;)");
         parseExpectError("for (1 + 1; ;)");
+    }
+
+    @Test
+    public void testReturnStmt() {
+        // parse 
+        parseOneStmt("return a;");
+        parseOneStmt("return;");
+        // execute
+        {
+            Stmt stmt = parseOneStmt("return 1;");
+            try {
+                stmt.accept(interpreter);
+                fail("ReturnThrowable expected.");
+            } catch (ReturnThrowable e) {
+                assertEquals(1.0, e.returnValue);
+            }
+        }
+        // invalid
+        parseExpectError("return");
+        parseExpectError("return var a;");
     }
 
 }

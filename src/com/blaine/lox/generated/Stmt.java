@@ -2,6 +2,7 @@
 package com.blaine.lox.generated;
 
 import java.util.List;
+import com.blaine.lox.Token;
 
 public interface Stmt {
 
@@ -51,6 +52,24 @@ public interface Stmt {
         }
     }
 
+    public static class DecFunStmt implements Stmt{
+
+        public final Token funName;
+        public final List<Token> params;
+        public final List<Stmt> stmts;
+
+        public DecFunStmt(Token funName,List<Token> params,List<Stmt> stmts) {
+            this.funName = funName;
+            this.params = params;
+            this.stmts = stmts;
+        }
+
+        @Override
+        public <R> R accept(StmtVisitor<R> visitor){
+            return visitor.visitDecFunStmt(this);
+        }
+    }
+
     public static class BlockStmt implements Stmt{
 
         public final List<Stmt> stmts;
@@ -96,6 +115,22 @@ public interface Stmt {
         @Override
         public <R> R accept(StmtVisitor<R> visitor){
             return visitor.visitWhileStmt(this);
+        }
+    }
+
+    public static class ReturnStmt implements Stmt{
+
+        public final Expr value;
+        public final Token token;
+
+        public ReturnStmt(Expr value,Token token) {
+            this.value = value;
+            this.token = token;
+        }
+
+        @Override
+        public <R> R accept(StmtVisitor<R> visitor){
+            return visitor.visitReturnStmt(this);
         }
     }
 

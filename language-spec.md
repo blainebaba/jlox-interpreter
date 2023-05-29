@@ -101,6 +101,7 @@ Precedence from low to high.
 | `+` `-`           | add and subtract    | left-to-right |
 | `*` `/`           | multiply and divide | left-to-right |
 | `-` `!`           | negate, bool not    | right-to-left |
+| `()`              | function call       | left-to-right |
 
 Same precedence as C.
 
@@ -116,7 +117,8 @@ EQUAL_TERM -> COMP_TERM (("=="|"!=") COMP_TERM)*
 COMP_TERM -> ADD_TERM (("<"|">"|"<="|">=") ADD_TERM)*
 ADD_TERM -> MUL_TERM (("+"|"-") MUL_TERM)*
 MUL_TERM -> UNARY_TERM (("*"|"/") UNARY_TERM)*
-UNARY_TERM -> ("!"|"-") UNARY_TERM | PRIMARY
+UNARY_TERM -> ("!"|"-") UNARY_TERM | CALL_TERM
+CALL_TERM -> PRIMARY ( "(" (EXPR (, EXPR)* )? ")")*
 PRIMARY -> STRING|NUMBER|IDENTIFIER|"true"|"false"|nil|"(" EXPR ")"
 ```
 
@@ -124,18 +126,22 @@ Implement parser is basically converting these rules into code.
 
 ### Statement parsing rules
 PROGRAM -> RELAX_STMT* "EOF"
-RELAX_STMT -> DECLARE_STMT | STRICT_STMT
-STRICT_STMT -> EXPR_STMT | PRINT_STMT | BLOCK_STMT | IF_STMT | WHILE_STMT | FOR_STMT
+RELAX_STMT -> DECLARE_VAR_STMT | DECLARE_FUN_STMT | STRICT_STMT
+STRICT_STMT -> EXPR_STMT | PRINT_STMT | BLOCK_STMT | IF_STMT | WHILE_STMT | FOR_STMT | RETURN_STMT
 
-DECLARE_STMT -> "var" IDENTIFIER ("=" EXPR)? ";"
+DECLARE_VAR_STMT -> "var" IDENTIFIER ("=" EXPR)? ";"
+DECLARE_FUN_STMT -> fun FUNCY_STMT
+FUNCY_STMT -> IDENTIFIER "(" ( IDENTIFIER (, IDENTIFIER)* )? ")" "{" RELAX_STMT* "}" 
 EXPR_STMT -> EXPR ";"
 PRINT_STMT -> "print" EXPR ";"
 BLOCK_STMT -> "{" RELAX_STMT* "}"
 IF_STMT -> "if" "(" EXPR ")" RELAX_STMT ("else" RELAX_STMT)?
 WHILE_STMT -> "while" "(" EXPR ")" RELAX_STMT
-FOR_STMT -> "for" "(" (DECLARE_STMT|EXPR_STMT|";") EXPR? ";" EXPR? ";" ")" RELAX_STMT
+FOR_STMT -> "for" "(" (DECLARE_VAR_STMT|EXPR_STMT|";") EXPR? ";" EXPR? ";" ")" RELAX_STMT
+RETURN_STMT -> "return" (Expr)? ";"
 
 RELAX_STMT is introduced to exclude DECLARE_STMT from some use cases.
+FUNCY_STMT is function define statement without "fun" keyword, this is re-used to define methods.
 
 ## Notes
 * notice type mismatch in expression parsing will not throw parser error. This is because lox is dynamic type language, so type mis-match is a runtime error.

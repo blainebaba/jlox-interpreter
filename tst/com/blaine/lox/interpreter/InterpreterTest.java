@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import com.blaine.lox.Scanner;
 import com.blaine.lox.Token;
+import com.blaine.lox.Utils;
 import com.blaine.lox.generated.Stmt;
 import com.blaine.lox.parser.Parser;
 import com.blaine.lox.parser.ParserError;
@@ -70,6 +71,22 @@ public class InterpreterTest {
         assertEquals(10.0, env.getVar("a"));
         // "b" should not be available outside of for.
         assertEquals(null, env.getVar("b"));
+    }
+
+    @Test
+    public void testFobonacci() throws Exception {
+        String script = Utils.readFile(getClass(), "Fibonacci.lox");
+        execute(parseStmts(script));
+        // 1 2 3 5 8   13 21 34 55 89
+        assertEquals(89.0, env.getVar("cur"));
+    }
+
+    @Test
+    public void testClosure() throws Exception {
+        String script = Utils.readFile(getClass(), "ClosureTest.lox");
+        execute(parseStmts(script));
+        assertEquals(1.0, env.getVar("a"));
+        assertEquals(2.0, env.getVar("b"));
     }
 
     private List<Stmt> parseStmts(String script) {

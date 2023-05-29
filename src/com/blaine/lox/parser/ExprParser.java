@@ -1,5 +1,7 @@
 package com.blaine.lox.parser;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.blaine.lox.Token;
@@ -7,6 +9,7 @@ import com.blaine.lox.Token.TokenType;
 import com.blaine.lox.generated.Expr;
 import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
+import com.blaine.lox.generated.Expr.CallExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
@@ -74,7 +77,30 @@ public class ExprParser {
         if (p.peek(MINUS, EXCLAM)) {
             return new UnaryExpr(p.consume(), unaryexprTerm());
         } else {
-            return primary();
+            return callTerm();
+        }
+    }
+
+    private Expr callTerm() {
+        Expr primary = primary();
+        if (p.peek(LEFT_PAREN)) {
+            Token call = p.match(LEFT_PAREN);
+
+            List<Expr> args = new ArrayList<>();
+            if (p.peek(RIGHT_PAREN)) {
+                p.match(RIGHT_PAREN);
+            } else {
+                args.add(p.parseExpression());
+                while (p.peek(COMMA)) {
+                    p.match(COMMA);
+                    args.add(p.parseExpression());
+                }
+                p.match(RIGHT_PAREN);
+            }
+
+            return new CallExpr(primary, call, args);
+        } else {
+            return primary;
         }
     }
 

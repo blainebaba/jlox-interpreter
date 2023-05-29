@@ -17,11 +17,25 @@ public class ExprEvaluateTest {
 
     private Interpreter interpreter;
     private Environment env;
+    private LoxCallable dummyFunction;
 
     @Before
     public void setup() {
         interpreter = new Interpreter();
         env = interpreter.getEnv();
+
+        dummyFunction = new LoxCallable() {
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                return args.get(0);
+            }
+
+            @Override
+            public int paramSize() {
+                return 1;
+            }
+        };
     }
 
     private Object evaluate(String expression) {
@@ -134,6 +148,17 @@ public class ExprEvaluateTest {
         {
             evaluateExpectError("b");
         }
+    }
+
+    @Test
+    public void testEvaluateFunCall() {
+        // happy case
+        {
+            env.declareVar("foo", dummyFunction);
+            assertEquals(1.0, evaluate("foo(1)"));
+        }
+        // invalid
+        evaluateExpectError("foo()()");
     }
 
     private void evaluateExpectError(String script) {
