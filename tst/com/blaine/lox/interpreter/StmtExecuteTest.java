@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -17,6 +18,7 @@ import com.blaine.lox.generated.Stmt.ExpressionStmt;
 import com.blaine.lox.generated.Stmt.PrintStmt;
 import com.blaine.lox.parser.Parser;
 import com.blaine.lox.parser.ParserError;
+import com.blaine.lox.parser.VarResolver;
 
 public class StmtExecuteTest {
 
@@ -28,7 +30,7 @@ public class StmtExecuteTest {
     @Before
     public void setup() {
         interpreter = new Interpreter();
-        env = interpreter.getEnv();
+        env = interpreter.getCurEnv();
 
         dummyFunction = new LoxCallable() {
 
@@ -48,6 +50,7 @@ public class StmtExecuteTest {
         List<Token> tokens = new Scanner(script).scan();
         Parser parser = new Parser(tokens);
         Stmt stmt = parser.parseStatement();
+        new VarResolver(interpreter).resolve(Arrays.asList(stmt));
         assertTrue(parser.isEnd());
         return stmt;
     }
@@ -56,7 +59,8 @@ public class StmtExecuteTest {
         List<Token> tokens = new Scanner(script).scan();
         Parser parser = new Parser(tokens);
         try {
-            parser.parseStatement();
+            Stmt stmt = parser.parseStatement();
+            new VarResolver(interpreter).resolve(Arrays.asList(stmt));
         } catch (ParserError e) {
             return;
         }
@@ -102,7 +106,7 @@ public class StmtExecuteTest {
             assertEquals(DeclareStmt.class, stmt.getClass());
 
             interpreter.execute(stmt);
-            Object value = interpreter.getEnv().getVar("a");
+            Object value = interpreter.getCurEnv().getVar("a");
             assertEquals(1.0, value);
         }
         // invalid statements
@@ -141,11 +145,13 @@ public class StmtExecuteTest {
     public void testIfStmt() {
         // happy case
         {
-            Stmt stmt = parseOneStmt("if (1 > 2) var a = 1; else var a = 2;");
+            env.declareVar("a", null);
+            Stmt stmt = parseOneStmt("if (1 > 2) {a = 1;} else {a = 2;}");
             stmt.accept(interpreter);
             assertEquals(2.0, env.getVar("a"));
         }  
         // invalid
+        parseExpectError("if (1 > 2) var a = 1;");
         parseExpectError("if (var a = 1;) var b = 2;");
         parseExpectError("if");
         parseExpectError("if ()");
@@ -183,6 +189,7 @@ public class StmtExecuteTest {
     @Test
     public void testReturnStmt() {
         // parse 
+        env.declareVar("a", 1.0);
         parseOneStmt("return a;");
         parseOneStmt("return;");
         // execute

@@ -1,0 +1,18 @@
+// without var resolving in chapter 11, this test will fail.
+
+var a = 1;
+var b;
+var c;
+
+fun foo() {
+    fun bar() {
+        return a;
+    }
+
+    // b,c should both be 1
+    b = bar();
+    var a = 2;
+    c = bar();
+}
+
+foo();

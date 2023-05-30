@@ -26,26 +26,27 @@ import static com.blaine.lox.Token.TokenType.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
 
-    // stores built-in vars/functions
-    private Environment builtinEnv;
     // outer most scope
     private Environment rootEnv;
     private Environment curEnv;
+    private Map<Expr, Integer> varResolutions;
+
 
     public Interpreter() {
-        this.builtinEnv = new Environment(null);
-        this.rootEnv = new Environment(builtinEnv);
+        this.rootEnv = new Environment(null);
         this.curEnv = rootEnv;
 
         // defines built-in functions
 
         // epoch time in seconds
-        builtinEnv.declareVar("clock", new LoxCallable() {
+        rootEnv.declareVar("clock", new LoxCallable() {
             @Override
             public Object call(Interpreter interpreter, List<Object> args) {
                 return System.currentTimeMillis() / 1000.0;
@@ -55,6 +56,8 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
                 return 0;
             }
         });
+
+        varResolutions = new HashMap<>();
     }
 
     public void execute(Stmt stmt) {
@@ -74,7 +77,22 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
             // restore env
             curEnv = oldEnv;
         }
+    }
 
+    // record var resolution result
+    public void storeVarResolution(Expr expr, int diff) {
+        varResolutions.put(expr, diff);
+    }
+
+    // given an expression, resolve it to correct scope
+    // only assign and variable expression needs resolve.
+    private Environment resolveScope(Expr expr) {
+        int diff = varResolutions.get(expr);
+        Environment env = curEnv;
+        for (int i = 0; i < diff; i++) {
+            env = env.outer;
+        }
+        return env;
     }
 
     ///////////////
@@ -84,7 +102,8 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     @Override
     public Object visitAssignExpr(AssignExpr assign) {
         Object value = assign.expr.accept(this);
-        curEnv.assignVar(assign.varName, value, assign.var);
+        Environment env = resolveScope(assign);
+        env.assignVar(assign.varName, value, assign.var);
         return value;
     }
 
@@ -209,7 +228,8 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
 
     @Override
     public Object visitVariableExpr(VariableExpr var) {
-        return curEnv.evaluateVar(var.varName, var.token);
+        Environment env = resolveScope(var);
+        return env.evaluateVar(var.varName, var.token);
     }
 
     private void checkBinaryExprOperandType(Object left, Object right, Token operator, Class<?> ... types) {
@@ -323,8 +343,12 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     // Helper methods 
     ///////////
 
-    Environment getEnv() {
+    Environment getCurEnv() {
         return curEnv;
+    }
+
+    public Environment getRootEnv() {
+        return rootEnv;
     }
 
     // push one more level of Env

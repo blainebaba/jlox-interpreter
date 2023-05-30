@@ -1,12 +1,14 @@
 package com.blaine.lox.interpreter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.blaine.lox.Token;
 
 /**
- * Runtime environment.
+ * Runtime environment. With resolver resolves var references, we can access vars confidently in runtime.
  */
 public class Environment {
 
@@ -23,48 +25,24 @@ public class Environment {
         vars.put(name, initValue);
     }
 
-    // if current env doesn't have, go to outer scope.
     public Object evaluateVar(String varName, Token var) {
-        if (localContainsVar(varName)) {
-            return vars.get(varName);
-        }
-
-        if (outer != null) {
-            return outer.evaluateVar(varName, var);
-        }
-
-        throw new RuntimeError(String.format("Undefined variable '%s'", varName), var.line, var.column);
+        return vars.get(varName);
     }
 
-    // if current scope has variable
     public boolean localContainsVar(String name) {
         return vars.containsKey(name);
     }
 
     public void assignVar(String varName, Object value, Token var) {
-        if (localContainsVar(varName)) {
-            vars.put(varName, value);
-            return;
-        }
-
-        if (outer != null) {
-            outer.assignVar(varName, value, var);
-            return;
-        }
-
-        throw new RuntimeError(String.format("Undefined variable '%s'", varName), var.line, var.column);
+        vars.put(varName, value);
     }
 
-    // read variable, without checking existance
+    // get local vars, for testing
     public Object getVar(String varName) {
-        if (localContainsVar(varName)) {
-            return vars.get(varName);
-        }
+        return vars.get(varName);
+    }
 
-        if (outer != null) {
-            return outer.getVar(varName);
-        }
-
-        return null;
+    public List<String> listLocalVars() {
+        return new ArrayList<>(vars.keySet());
     }
 }

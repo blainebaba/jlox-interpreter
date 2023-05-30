@@ -134,11 +134,11 @@ public class StmtParser {
         p.match(LEFT_PAREN);
         Expr cond = p.parseExpression();
         p.match(RIGHT_PAREN);
-        Stmt ifClause = p.parseStatement();
+        Stmt ifClause = strictStmt();
         Stmt elseClause = null;
         if (p.peek(ELSE)) {
             p.consume();
-            elseClause = p.parseStatement();
+            elseClause = strictStmt();
         }
         return new IfStmt(cond, ifClause, elseClause);
     }

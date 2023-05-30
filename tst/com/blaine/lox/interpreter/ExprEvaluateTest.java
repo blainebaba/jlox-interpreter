@@ -10,7 +10,10 @@ import org.junit.Test;
 
 import com.blaine.lox.Scanner;
 import com.blaine.lox.Token;
+import com.blaine.lox.generated.Expr;
 import com.blaine.lox.parser.Parser;
+import com.blaine.lox.parser.ParserError;
+import com.blaine.lox.parser.VarResolver;
 
 // test expression parse and evaluate
 public class ExprEvaluateTest {
@@ -22,7 +25,7 @@ public class ExprEvaluateTest {
     @Before
     public void setup() {
         interpreter = new Interpreter();
-        env = interpreter.getEnv();
+        env = interpreter.getCurEnv();
 
         dummyFunction = new LoxCallable() {
 
@@ -36,11 +39,6 @@ public class ExprEvaluateTest {
                 return 1;
             }
         };
-    }
-
-    private Object evaluate(String expression) {
-        List<Token> tokens = new Scanner(expression).scan();
-        return new Parser(tokens).parseExpression().accept(interpreter);
     }
 
     @Test
@@ -122,14 +120,13 @@ public class ExprEvaluateTest {
         }
         // assign to undefined var
         {
-            evaluateExpectError("b = 2");
-            assertEquals(null, env.getVar("b"));
+            parseExpectError("b = 2");
         }
         // chain assignment
         {
-            interpreter.getEnv().declareVar("c", null);
-            interpreter.getEnv().declareVar("d", null);
-            interpreter.getEnv().declareVar("e", null);
+            interpreter.getCurEnv().declareVar("c", null);
+            interpreter.getCurEnv().declareVar("d", null);
+            interpreter.getCurEnv().declareVar("e", null);
             assertEquals(1.0, evaluate("c = d = e = 1"));
             assertEquals(1.0, env.getVar("c"));
             assertEquals(1.0, env.getVar("d"));
@@ -141,12 +138,12 @@ public class ExprEvaluateTest {
     public void testEvaluateVariable() {
         // exist global var 
         {
-            interpreter.getEnv().declareVar("a", 1.0);
+            interpreter.getCurEnv().declareVar("a", 1.0);
             assertEquals(1.0, evaluate("a"));
         }
         // non-exist global var 
         {
-            evaluateExpectError("b");
+            parseExpectError("b");
         }
     }
 
@@ -161,9 +158,39 @@ public class ExprEvaluateTest {
         evaluateExpectError("foo()()");
     }
 
-    private void evaluateExpectError(String script) {
+    private Expr parse(String expression) {
+        List<Token> tokens = new Scanner(expression).scan();
+        Expr expr = new Parser(tokens).parseExpression();
+        new VarResolver(interpreter).resolveExpression(expr);;
+        return expr;
+    }
+
+    private void parseExpectError(String script) {
         try {
-            evaluate(script);
+            List<Token> tokens = new Scanner(script).scan();
+            Expr expr = new Parser(tokens).parseExpression();
+            new VarResolver(interpreter).resolveExpression(expr);;
+        } catch (ParserError e) {
+            return;
+        }
+        fail("ParserError expected.");
+    }
+
+    private Object evaluate(Expr expr) {
+        return expr.accept(interpreter);
+    }
+
+    // parse + evaluate
+    private Object evaluate(String expression) {
+        Expr expr = parse(expression);
+        return evaluate(expr);
+    }
+
+    // parse + evaluate
+    private void evaluateExpectError(String script) {
+        Expr expr = parse(script);
+        try {
+            evaluate(expr);
         } catch (RuntimeError e) {
             // pass
             return;

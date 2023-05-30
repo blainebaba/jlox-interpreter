@@ -15,6 +15,7 @@ import com.blaine.lox.Utils;
 import com.blaine.lox.generated.Stmt;
 import com.blaine.lox.parser.Parser;
 import com.blaine.lox.parser.ParserError;
+import com.blaine.lox.parser.VarResolver;
 
 // test script with more than one stmt/expr.
 public class InterpreterTest {
@@ -25,8 +26,8 @@ public class InterpreterTest {
     @Before
     public void setup() {
         interpreter = new Interpreter();
-        env = interpreter.getEnv();
-    }
+        env = interpreter.getCurEnv();
+      }
 
     @Test
     public void testVariables() {
@@ -99,19 +100,29 @@ public class InterpreterTest {
         assertEquals(1.0, (t2 - t1), 0.1);
     }
 
+    @Test
+    public void testVarResolving() throws Exception {
+        String script = Utils.readFile(getClass(), "VarResolvingTest.lox");
+        execute(parseStmts(script));
+        assertEquals(1.0, env.getVar("b"));
+        assertEquals(1.0, env.getVar("c"));
+    }
+
     private List<Stmt> parseStmts(String script) {
         List<Token> tokens = new Scanner(script).scan();
         Parser parser = new Parser(tokens);
-        List<Stmt> stmt = parser.parse();
+        List<Stmt> stmts = parser.parse();
+        new VarResolver(interpreter).resolve(stmts);
         assertTrue(parser.isEnd());
-        return stmt;
+        return stmts;
     }
 
     private void parseExpectError(String script) {
         List<Token> tokens = new Scanner(script).scan();
         Parser parser = new Parser(tokens);
         try {
-            parser.parseStatement();
+            List<Stmt> stmts = parser.parse();
+            new VarResolver(interpreter).resolve(stmts);
         } catch (ParserError e) {
             return;
         }

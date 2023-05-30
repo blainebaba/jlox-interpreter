@@ -14,6 +14,7 @@ import com.blaine.lox.interpreter.ReturnThrowable;
 import com.blaine.lox.interpreter.RuntimeError;
 import com.blaine.lox.parser.Parser;
 import com.blaine.lox.parser.ParserError;
+import com.blaine.lox.parser.VarResolver;
 
 class Lox {
     public static void main(String[] args) throws Exception {
@@ -63,6 +64,10 @@ class Lox {
             }
             return;
         }
+
+        // resolve references
+        VarResolver resolver = new VarResolver(interpreter);
+        resolver.resolve(stmts);
 
         // execute
         try {
