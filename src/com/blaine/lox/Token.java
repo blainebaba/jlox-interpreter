@@ -14,6 +14,7 @@ public class Token {
         COMMA(","), SEMICOLON(";"), EQUAL("="), EXCLAM("!"), 
         PLUS("+"), MINUS("-"), STAR("*"), SLASH("/"), 
         LESS_EQUAL("<="), GREATER_EQUAL(">="), NOT_EQUAL("!="), EQUAL_EQAUL("=="), GREATER(">"), LESSER("<"),
+        DOT("."),
 
         // keywords
         FOR("for"), WHILE("while"), IF("if"), ELSE("else"), 

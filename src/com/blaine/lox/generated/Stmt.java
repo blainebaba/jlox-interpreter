@@ -134,4 +134,20 @@ public interface Stmt {
         }
     }
 
+    public static class ClassStmt implements Stmt{
+
+        public final Token name;
+        public final List<DecFunStmt> methods;
+
+        public ClassStmt(Token name,List<DecFunStmt> methods) {
+            this.name = name;
+            this.methods = methods;
+        }
+
+        @Override
+        public <R> R accept(StmtVisitor<R> visitor){
+            return visitor.visitClassStmt(this);
+        }
+    }
+
 }

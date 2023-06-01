@@ -207,4 +207,17 @@ public class StmtExecuteTest {
         parseExpectError("return var a;");
     }
 
+    @Test
+    public void testClassDecStmt() {
+        // happy case
+        {
+            parseOneStmt("class Foo {}").accept(interpreter);
+            LoxClass klass = (LoxClass) env.getVar("Foo");
+            assertEquals("Foo", klass.className);
+        }
+        // invalid
+        parseExpectError("class Foo;");
+        parseExpectError("class Foo { 1 + 1;}");
+    }
+
 }

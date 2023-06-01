@@ -21,7 +21,9 @@ public class GenerateAst {
                 "Literal:Object value,Token token",
                 "Variable:String varName,Token token",
                 "Assign:String varName,Token var,Token equal,Expr expr",
-                "Call:Expr fun,Token call,List<Expr> args"
+                "Call:Expr fun,Token call,List<Expr> args",
+                "Get:Expr obj,Token dot,Token field",
+                "Set:Expr obj,Token dot,Token field,Token equal,Expr value"
             ), 
             Arrays.asList(
                 "com.blaine.lox.Token",
@@ -31,7 +33,7 @@ public class GenerateAst {
 
         // defines expression visitor
         defineVisitor("com/blaine/lox/generated", "Expr", Arrays.asList(
-            "Binary", "Unary", "Grouping", "Literal", "Variable", "Assign", "Call"
+            "Binary", "Unary", "Grouping", "Literal", "Variable", "Assign", "Call", "Get", "Set"
         ));
 
         // defines statement
@@ -44,7 +46,8 @@ public class GenerateAst {
                 "Block:List<Stmt> stmts",
                 "If:Expr cond,Stmt ifClause,Stmt elseClause",
                 "While:Expr cond,Stmt stmt",
-                "Return:Expr value,Token token"
+                "Return:Expr value,Token token",
+                "Class:Token name,List<DecFunStmt> methods"
             ), 
             Arrays.asList(
                 "java.util.List",
@@ -54,7 +57,7 @@ public class GenerateAst {
 
         // defines expression visitor
         defineVisitor("com/blaine/lox/generated", "Stmt", Arrays.asList(
-            "Expression", "Print", "Declare", "DecFun", "Block", "If", "While", "Return"
+            "Expression", "Print", "Declare", "DecFun", "Block", "If", "While", "Return", "Class"
         ));
     }
 

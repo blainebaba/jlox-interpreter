@@ -3,11 +3,14 @@ package com.blaine.lox.interpreter;
 import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.CallExpr;
+import com.blaine.lox.generated.Expr.GetExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
+import com.blaine.lox.generated.Expr.SetExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
 import com.blaine.lox.generated.Stmt.BlockStmt;
+import com.blaine.lox.generated.Stmt.ClassStmt;
 import com.blaine.lox.generated.Stmt.DecFunStmt;
 import com.blaine.lox.generated.Stmt.DeclareStmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
@@ -232,6 +235,36 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
         return env.evaluateVar(var.varName, var.token);
     }
 
+    @Override
+    public Object visitGetExpr(GetExpr expr) {
+        Object obj = expr.obj.accept(this);
+        Token dot = expr.dot;
+
+        if (obj.getClass() != LoxInstance.class) {
+            throw new RuntimeError("Dot operator must apply on instance.", dot.line, dot.column);
+        }
+
+        LoxInstance instance = (LoxInstance)obj;
+        String fieldName = (String)expr.field.literalValue;
+        return instance.get(fieldName);
+    }
+
+    @Override
+    public Object visitSetExpr(SetExpr expr) {
+        Object obj = expr.obj.accept(this);
+        Token dot = expr.dot;
+
+        if (obj.getClass() != LoxInstance.class) {
+            throw new RuntimeError("Dot operator must apply on instance.", dot.line, dot.column);
+        }
+
+        LoxInstance instance = (LoxInstance)obj;
+        String fieldName = (String)expr.field.literalValue;
+        Object value = expr.value.accept(this);
+        instance.set(fieldName, value);
+        return value;
+    }
+
     private void checkBinaryExprOperandType(Object left, Object right, Token operator, Class<?> ... types) {
         if (left == null || right == null) {
             throw new RuntimeError(String.format("Can't use nil as operand of '%s'", operator.lexeme), operator.line, operator.column);
@@ -294,9 +327,27 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     @Override
     public Void visitDecFunStmt(DecFunStmt declare) {
         String funName = (String)declare.funName.literalValue;
+        LoxFunction function = createLoxFunction(declare);
+        curEnv.declareVar(funName, function);
+        return null;
+    }
+
+    private LoxFunction createLoxFunction(DecFunStmt declare) {
+        String funName = (String)declare.funName.literalValue;
         List<String> params = declare.params.stream().map(t -> (String)t.literalValue).collect(Collectors.toList());
         LoxFunction function = new LoxFunction(funName, params, declare.stmts, curEnv);
-        curEnv.declareVar(funName, function);
+        return function;
+    }
+
+    @Override
+    public Void visitClassStmt(ClassStmt klass) {
+        String className = (String)klass.name.literalValue;
+        List<LoxFunction> methods = new ArrayList<>();
+        for (DecFunStmt method : klass.methods) {
+            methods.add(createLoxFunction(method));
+        }
+        LoxClass classObj = new LoxClass(className, methods, curEnv);
+        curEnv.declareVar(className, classObj);
         return null;
     }
 

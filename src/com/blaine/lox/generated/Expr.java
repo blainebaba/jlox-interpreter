@@ -126,4 +126,44 @@ public interface Expr {
         }
     }
 
+    public static class GetExpr implements Expr{
+
+        public final Expr obj;
+        public final Token dot;
+        public final Token field;
+
+        public GetExpr(Expr obj,Token dot,Token field) {
+            this.obj = obj;
+            this.dot = dot;
+            this.field = field;
+        }
+
+        @Override
+        public <R> R accept(ExprVisitor<R> visitor){
+            return visitor.visitGetExpr(this);
+        }
+    }
+
+    public static class SetExpr implements Expr{
+
+        public final Expr obj;
+        public final Token dot;
+        public final Token field;
+        public final Token equal;
+        public final Expr value;
+
+        public SetExpr(Expr obj,Token dot,Token field,Token equal,Expr value) {
+            this.obj = obj;
+            this.dot = dot;
+            this.field = field;
+            this.equal = equal;
+            this.value = value;
+        }
+
+        @Override
+        public <R> R accept(ExprVisitor<R> visitor){
+            return visitor.visitSetExpr(this);
+        }
+    }
+
 }

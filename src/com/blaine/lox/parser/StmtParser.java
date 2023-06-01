@@ -11,6 +11,7 @@ import com.blaine.lox.generated.Stmt.DecFunStmt;
 import com.blaine.lox.generated.Stmt.IfStmt;
 import com.blaine.lox.generated.Stmt.WhileStmt;
 import com.blaine.lox.generated.Stmt.ReturnStmt;
+import com.blaine.lox.generated.Stmt.ClassStmt;
 
 import static com.blaine.lox.Token.TokenType.*;
 
@@ -38,6 +39,9 @@ public class StmtParser {
         } 
         if (p.peek(FUN)) {
             return decFunStmt();
+        }
+        if (p.peek(CLASS)) {
+            return decClassStmt();
         }
         else {
             return strictStmt();
@@ -82,6 +86,10 @@ public class StmtParser {
 
     private Stmt decFunStmt() {
         p.match(FUN);
+        return decFuncyStmt();
+    }
+
+    private Stmt decFuncyStmt() {
         Token funName = p.match(IDENTIFIER);
 
         List<Token> params = new ArrayList<>();
@@ -103,6 +111,20 @@ public class StmtParser {
         p.match(RIGHT_BRACE);
 
         return new DecFunStmt(funName, params, stmts);
+    }
+
+    private Stmt decClassStmt() {
+        p.match(CLASS);
+        Token className = p.match(IDENTIFIER);
+
+        List<DecFunStmt> methods = new ArrayList<>();
+        p.match(LEFT_BRACE);
+        while (!p.peek(RIGHT_BRACE)) {
+            methods.add((DecFunStmt)decFuncyStmt());
+        }
+        p.match(RIGHT_BRACE);
+
+        return new ClassStmt(className, methods);
     }
 
     private Stmt printStmt() {

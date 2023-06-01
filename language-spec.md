@@ -55,6 +55,7 @@ Features required by book.
             "foo() { ... }"
         * constructor is method named "init".
         * instantiate uses class name as function: "var i = Foo();"
+        * access instance properties use `.`, like "foo.bar = 1;"
         * access other methods/fields in methods use `this` keyword.  
         * class is first class, assign class to variable: "var v = Foo;"
         * inheritance: use `<` "class Bar < Foo { ... }"
@@ -110,7 +111,7 @@ Same precedence as C.
 ### Expression Parsing Rules
 ```
 EXPR -> ASSIGN_TERM
-ASSIGN_TERM -> IDENTIFIER "=" ASSIGN_TERM | OR_TERM
+ASSIGN_TERM(SET_TERM) -> (GET_TERM ".")? IDENTIFIER "=" ASSIGN_TERM | OR_TERM
 OR_TERM -> AND_TERM ("or" AND_TERM)*
 AND_TERM -> EQUAL_TERM ("and" EQUAL_TERM)*
 EQUAL_TERM -> COMP_TERM (("=="|"!=") COMP_TERM)*
@@ -118,7 +119,8 @@ COMP_TERM -> ADD_TERM (("<"|">"|"<="|">=") ADD_TERM)*
 ADD_TERM -> MUL_TERM (("+"|"-") MUL_TERM)*
 MUL_TERM -> UNARY_TERM (("*"|"/") UNARY_TERM)*
 UNARY_TERM -> ("!"|"-") UNARY_TERM | CALL_TERM
-CALL_TERM -> PRIMARY ( "(" (EXPR (, EXPR)* )? ")")*
+CALL_TERM -> GET_TERM ( "(" (EXPR (, EXPR)* )? ")")*
+GET_TERM -> PRIMARY ("." IDENTIFIER )*
 PRIMARY -> STRING|NUMBER|IDENTIFIER|"true"|"false"|nil|"(" EXPR ")"
 ```
 
@@ -126,11 +128,12 @@ Implement parser is basically converting these rules into code.
 
 ### Statement parsing rules
 PROGRAM -> RELAX_STMT* "EOF"
-RELAX_STMT -> DECLARE_VAR_STMT | DECLARE_FUN_STMT | STRICT_STMT
+RELAX_STMT -> DECLARE_VAR_STMT | DECLARE_FUN_STMT | DECLARE_CLASS_STMT | STRICT_STMT
 STRICT_STMT -> EXPR_STMT | PRINT_STMT | BLOCK_STMT | IF_STMT | WHILE_STMT | FOR_STMT | RETURN_STMT
 
 DECLARE_VAR_STMT -> "var" IDENTIFIER ("=" EXPR)? ";"
 DECLARE_FUN_STMT -> fun FUNCY_STMT
+DECLARE_CLASS_STMT -> class IDENTIFIER "{" FUNCY_STMT* "}"
 FUNCY_STMT -> IDENTIFIER "(" ( IDENTIFIER (, IDENTIFIER)* )? ")" "{" RELAX_STMT* "}" 
 EXPR_STMT -> EXPR ";"
 PRINT_STMT -> "print" EXPR ";"

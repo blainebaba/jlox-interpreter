@@ -10,10 +10,12 @@ import com.blaine.lox.generated.Expr;
 import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.CallExpr;
+import com.blaine.lox.generated.Expr.GetExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
+import com.blaine.lox.generated.Expr.SetExpr;
 
 import static com.blaine.lox.Token.TokenType.*;
 
@@ -41,7 +43,14 @@ public class ExprParser {
                 Token equal = p.consume();
                 Expr right = assignTerm();
                 return new AssignExpr(var.varName, var.token, equal, right);
-            } else {
+            } 
+            if (left.getClass().equals(GetExpr.class)) {
+                GetExpr getExpr = (GetExpr)left;
+                Token equal = p.consume();
+                Expr right = assignTerm();
+                return new SetExpr(getExpr.obj, getExpr.dot, getExpr.field, equal, right);
+            }
+            else {
                 Token equal = p.cur();
                 throw new ParserError("Invalid assignment target.", equal.line, equal.column);
             }
@@ -82,7 +91,7 @@ public class ExprParser {
     }
 
     private Expr callTerm() {
-        Expr primary = primary();
+        Expr primary = getTerm();
         if (p.peek(LEFT_PAREN)) {
             Token call = p.match(LEFT_PAREN);
 
@@ -102,6 +111,16 @@ public class ExprParser {
         } else {
             return primary;
         }
+    }
+
+    private Expr getTerm() {
+        Expr left = primary();
+        while (p.peek(DOT)) {
+            Token dot = p.consume();
+            Token field = p.match(IDENTIFIER);
+            left = new GetExpr(left, dot, field);
+        }
+        return left;
     }
 
     private Expr primary() {

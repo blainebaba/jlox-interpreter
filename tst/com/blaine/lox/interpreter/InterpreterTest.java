@@ -108,6 +108,16 @@ public class InterpreterTest {
         assertEquals(1.0, env.getVar("c"));
     }
 
+    @Test
+    public void testClass() {
+        execute(parseStmts("class Foo {}; var foo = Foo();"));
+        assertEquals(LoxClass.class, env.getVar("Foo").getClass());
+        assertEquals(LoxInstance.class, env.getVar("foo").getClass());
+
+        execute(parseStmts("foo.v1 = 123; var a = foo.v1;"));
+        assertEquals(123.0, env.getVar("a"));
+    }
+
     private List<Stmt> parseStmts(String script) {
         List<Token> tokens = new Scanner(script).scan();
         Parser parser = new Parser(tokens);

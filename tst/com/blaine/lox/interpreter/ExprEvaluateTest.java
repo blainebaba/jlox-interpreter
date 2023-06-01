@@ -3,6 +3,7 @@ package com.blaine.lox.interpreter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
@@ -21,6 +22,7 @@ public class ExprEvaluateTest {
     private Interpreter interpreter;
     private Environment env;
     private LoxCallable dummyFunction;
+    private LoxClass dummyClass;
 
     @Before
     public void setup() {
@@ -39,6 +41,9 @@ public class ExprEvaluateTest {
                 return 1;
             }
         };
+
+        dummyClass = new LoxClass("Foo", new ArrayList<>(), env);
+
     }
 
     @Test
@@ -156,6 +161,13 @@ public class ExprEvaluateTest {
         }
         // invalid
         evaluateExpectError("foo()()");
+    }
+
+    @Test
+    public void testClassInstantiate() {
+        env.declareVar("Foo", dummyClass);
+        LoxInstance instance = (LoxInstance) evaluate("Foo()");
+        assertEquals("Foo", instance.klass.className);
     }
 
     private Expr parse(String expression) {

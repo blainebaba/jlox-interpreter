@@ -9,6 +9,7 @@ import com.blaine.lox.generated.Stmt.BlockStmt;
 import com.blaine.lox.generated.Stmt.IfStmt;
 import com.blaine.lox.generated.Stmt.WhileStmt;
 import com.blaine.lox.generated.Stmt.ReturnStmt;
+import com.blaine.lox.generated.Stmt.ClassStmt;
 
 public interface StmtVisitor<R> {
 
@@ -20,4 +21,5 @@ public interface StmtVisitor<R> {
     R visitIfStmt(IfStmt ifstmt);
     R visitWhileStmt(WhileStmt whilestmt);
     R visitReturnStmt(ReturnStmt returnstmt);
+    R visitClassStmt(ClassStmt classstmt);
 }

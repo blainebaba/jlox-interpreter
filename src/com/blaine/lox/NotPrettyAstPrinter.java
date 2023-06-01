@@ -4,8 +4,10 @@ import com.blaine.lox.generated.ExprVisitor;
 import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.CallExpr;
+import com.blaine.lox.generated.Expr.GetExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
+import com.blaine.lox.generated.Expr.SetExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
 
@@ -46,6 +48,18 @@ public class NotPrettyAstPrinter implements ExprVisitor<String> {
 
     @Override
     public String visitCallExpr(CallExpr call) {
+        // TODO
+        return "";
+    }
+
+    @Override
+    public String visitGetExpr(GetExpr getexpr) {
+        // TODO
+        return "";
+    }
+
+    @Override
+    public String visitSetExpr(SetExpr setexpr) {
         // TODO
         return "";
     }

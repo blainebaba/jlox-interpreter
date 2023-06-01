@@ -3,8 +3,10 @@ package com.blaine.lox.parser;
 import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.BinaryExpr;
 import com.blaine.lox.generated.Expr.CallExpr;
+import com.blaine.lox.generated.Expr.GetExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
+import com.blaine.lox.generated.Expr.SetExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
 
@@ -18,6 +20,7 @@ import com.blaine.lox.generated.Expr;
 import com.blaine.lox.generated.ExprVisitor;
 import com.blaine.lox.generated.Stmt;
 import com.blaine.lox.generated.Stmt.BlockStmt;
+import com.blaine.lox.generated.Stmt.ClassStmt;
 import com.blaine.lox.generated.Stmt.DecFunStmt;
 import com.blaine.lox.generated.Stmt.DeclareStmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
@@ -134,6 +137,13 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
     }
 
     @Override
+    public Void visitClassStmt(ClassStmt klass) {
+        // TODO
+        defineVar((String)klass.name.literalValue);
+        return null;
+    }
+
+    @Override
     public Void visitBlockStmt(BlockStmt block) {
         scopes.push(new HashMap<>());
         for (Stmt stmt : block.stmts) {
@@ -217,6 +227,21 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
         for (Expr arg : call.args) {
             arg.accept(this);
         }
+        return null;
+    }
+
+    // properties belong to instance so it doesn't need resolve.
+    @Override
+    public Void visitGetExpr(GetExpr get) {
+        get.obj.accept(this);
+        return null;
+    }
+
+
+    @Override
+    public Void visitSetExpr(SetExpr set) {
+        set.obj.accept(this);
+        set.value.accept(this);
         return null;
     }
 }
