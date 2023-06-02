@@ -40,8 +40,12 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
     // bool value indicates whether this var is ready to be used.
     private Stack<Map<String,Boolean>> scopes;
     private Interpreter interpreter;
-    // flag indicates whether statement is in class.
-    private boolean isInClass = false;
+    private Stack<FunType> funType;
+
+    // current function context, use this to identify invalid "return" and "this" usage.
+    public static enum FunType {
+        NONE, FUNCTION, METHOD, INITIALIZER
+    }
 
     public VarResolver(Interpreter interpreter) {
         this.interpreter = interpreter;
@@ -54,13 +58,15 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
             rootScope.put(globalVar, true);
         }
         this.scopes.push(rootScope);
+        funType = new Stack<>();
     }
 
     public void resolve(List<Stmt> stmts) {
-        isInClass = false;
+        funType.push(FunType.NONE);
         for (Stmt stmt : stmts) {
             stmt.accept(this);
         }
+        funType.pop();
      }
 
     public void resolveExpression(Expr expr) {
@@ -125,6 +131,13 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
 
     @Override
     public Void visitDecFunStmt(DecFunStmt funStmt) {
+        funType.push(FunType.FUNCTION);
+        resolveFunction(funStmt);
+        funType.pop();
+        return null;
+    }
+
+    private void resolveFunction(DecFunStmt funStmt) {
         String funName = (String)funStmt.funName.literalValue;
         defineVar(funName);
         
@@ -136,24 +149,25 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
             stmt.accept(this);
         }
         scopes.pop();
-        return null;
     }
 
     @Override
     public Void visitClassStmt(ClassStmt klass) {
-        // TODO
         defineVar((String)klass.name.literalValue);
 
         // add additional scope for methods
         scopes.push(new HashMap<>());
-        boolean oldIsInClass = this.isInClass;
-        this.isInClass = true;
 
         for (DecFunStmt funStmt : klass.methods) {
-            funStmt.accept(this);
+            if (funStmt.funName.equals("init")) {
+                funType.push(FunType.INITIALIZER);
+            } else {
+                funType.push(FunType.METHOD);
+            }
+            resolveFunction(funStmt);
+            funType.pop();
         }
 
-        this.isInClass = oldIsInClass;
         scopes.pop();
 
         return null;
@@ -187,6 +201,11 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
 
     @Override
     public Void visitReturnStmt(ReturnStmt stmt) {
+        if (funType.peek() == FunType.NONE) {
+            throw new ParserError("Can't use 'return' outside of function.", stmt.token.line, stmt.token.column);
+        } else if (funType.peek() == FunType.INITIALIZER) {
+            throw new ParserError("Can't use 'return' in initializer.", stmt.token.line, stmt.token.column);
+        }
         if (stmt.value != null) {
             stmt.value.accept(this);
         }
@@ -228,7 +247,7 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
         if (varExpr.varName.equals("this")) {
             // always fixed.
             diff = 1;
-            if (!isInClass) {
+            if (funType.peek() != FunType.METHOD && funType.peek() != FunType.INITIALIZER) {
                 throw new ParserError("Can't use 'this' out side of methods.", varExpr.token.line, varExpr.token.column);
             }
         } else {

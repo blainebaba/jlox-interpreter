@@ -189,22 +189,11 @@ public class StmtExecuteTest {
     @Test
     public void testReturnStmt() {
         // parse 
-        env.declareVar("a", 1.0);
-        parseOneStmt("return a;");
-        parseOneStmt("return;");
-        // execute
-        {
-            Stmt stmt = parseOneStmt("return 1;");
-            try {
-                stmt.accept(interpreter);
-                fail("ReturnThrowable expected.");
-            } catch (ReturnThrowable e) {
-                assertEquals(1.0, e.returnValue);
-            }
-        }
+        parseOneStmt("fun foo() {return;}");
+        parseOneStmt("fun foo() {return 1;}");
         // invalid
-        parseExpectError("return");
-        parseExpectError("return var a;");
+        parseExpectError("return;");
+        parseExpectError("fun foo() {return var a;}");
     }
 
     @Test
