@@ -121,7 +121,7 @@ MUL_TERM -> UNARY_TERM (("*"|"/") UNARY_TERM)*
 UNARY_TERM -> ("!"|"-") UNARY_TERM | CALL_TERM
 CALL_TERM -> GET_TERM ( "(" (EXPR (, EXPR)* )? ")")*
 GET_TERM -> PRIMARY ("." IDENTIFIER )*
-PRIMARY -> STRING|NUMBER|IDENTIFIER|"true"|"false"|nil|"(" EXPR ")"
+PRIMARY -> STRING|NUMBER|IDENTIFIER|"true"|"false"|nil|"(" EXPR ")"|"this"|"super"
 ```
 
 Implement parser is basically converting these rules into code.
@@ -133,7 +133,7 @@ STRICT_STMT -> EXPR_STMT | PRINT_STMT | BLOCK_STMT | IF_STMT | WHILE_STMT | FOR_
 
 DECLARE_VAR_STMT -> "var" IDENTIFIER ("=" EXPR)? ";"
 DECLARE_FUN_STMT -> fun FUNCY_STMT
-DECLARE_CLASS_STMT -> class IDENTIFIER "{" FUNCY_STMT* "}"
+DECLARE_CLASS_STMT -> class IDENTIFIER ( "<" IDENTIFIER )? "{" FUNCY_STMT* "}"
 FUNCY_STMT -> IDENTIFIER "(" ( IDENTIFIER (, IDENTIFIER)* )? ")" "{" RELAX_STMT* "}" 
 EXPR_STMT -> EXPR ";"
 PRINT_STMT -> "print" EXPR ";"

@@ -3,6 +3,7 @@ package com.blaine.lox.generated;
 
 import java.util.List;
 import com.blaine.lox.Token;
+import com.blaine.lox.generated.Expr.VariableExpr;
 
 public interface Stmt {
 
@@ -137,10 +138,12 @@ public interface Stmt {
     public static class ClassStmt implements Stmt{
 
         public final Token name;
+        public final VariableExpr superClass;
         public final List<DecFunStmt> methods;
 
-        public ClassStmt(Token name,List<DecFunStmt> methods) {
+        public ClassStmt(Token name,VariableExpr superClass,List<DecFunStmt> methods) {
             this.name = name;
+            this.superClass = superClass;
             this.methods = methods;
         }
 

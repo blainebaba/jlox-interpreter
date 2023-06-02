@@ -166,4 +166,34 @@ public interface Expr {
         }
     }
 
+    public static class ThisExpr implements Expr{
+
+        public final Token token;
+
+        public ThisExpr(Token token) {
+            this.token = token;
+        }
+
+        @Override
+        public <R> R accept(ExprVisitor<R> visitor){
+            return visitor.visitThisExpr(this);
+        }
+    }
+
+    public static class SuperExpr implements Expr{
+
+        public final Token token;
+        public final Token method;
+
+        public SuperExpr(Token token,Token method) {
+            this.token = token;
+            this.method = method;
+        }
+
+        @Override
+        public <R> R accept(ExprVisitor<R> visitor){
+            return visitor.visitSuperExpr(this);
+        }
+    }
+
 }

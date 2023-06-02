@@ -7,6 +7,8 @@ import com.blaine.lox.generated.Expr.GetExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.SetExpr;
+import com.blaine.lox.generated.Expr.SuperExpr;
+import com.blaine.lox.generated.Expr.ThisExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
 import com.blaine.lox.generated.Stmt.BlockStmt;
@@ -240,13 +242,13 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
         Object obj = expr.obj.accept(this);
         Token dot = expr.dot;
 
-        if (obj.getClass() != LoxInstance.class) {
-            throw new RuntimeError("Dot operator must apply on instance.", dot.line, dot.column);
+        if (obj.getClass() == LoxInstance.class) {
+            LoxInstance instance = (LoxInstance)obj;
+            String fieldName = (String)expr.field.literalValue;
+            return instance.get(fieldName);
         }
 
-        LoxInstance instance = (LoxInstance)obj;
-        String fieldName = (String)expr.field.literalValue;
-        return instance.get(fieldName);
+        throw new RuntimeError("Dot operator must apply on instance.", dot.line, dot.column);
     }
 
     @Override
@@ -263,6 +265,20 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
         Object value = expr.value.accept(this);
         instance.set(fieldName, value);
         return value;
+    }
+
+    @Override
+    public Object visitThisExpr(ThisExpr expr) {
+        Environment env = resolveScope(expr);
+        return env.evaluateVar("this", expr.token);
+    }
+
+    @Override
+    public Object visitSuperExpr(SuperExpr expr) {
+        Environment env = resolveScope(expr);
+        LoxClass superClass = (LoxClass)env.evaluateVar("super", expr.token);
+        String methodName = (String)expr.method.literalValue;
+        return superClass.getMethod(methodName);
     }
 
     private void checkBinaryExprOperandType(Object left, Object right, Token operator, Class<?> ... types) {
@@ -342,11 +358,29 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     @Override
     public Void visitClassStmt(ClassStmt klass) {
         String className = (String)klass.name.literalValue;
-        List<LoxFunction> methods = new ArrayList<>();
-        for (DecFunStmt method : klass.methods) {
-            methods.add(createLoxFunction(method, curEnv));
+
+        LoxClass superClass = null;
+        if (klass.superClass != null) {
+            Object superClassObj = klass.superClass.accept(this);
+            if (superClassObj.getClass() != LoxClass.class) {
+                throw new RuntimeError("Must inheritant from another class", klass.name.line, klass.name.column);
+            }
+            superClass = (LoxClass)superClassObj;
         }
-        LoxClass classObj = new LoxClass(className, methods, curEnv);
+
+        List<LoxFunction> methods = new ArrayList<>();
+        // "super" is injected during class definition,
+        // however, "this" is injected during method invocation.
+        Environment methodEnv = curEnv;
+        if (superClass != null) {
+            methodEnv = new Environment(curEnv);
+            methodEnv.declareVar("super", superClass);
+        }
+        for (DecFunStmt method : klass.methods) {
+            methods.add(createLoxFunction(method, methodEnv));
+        }
+
+        LoxClass classObj = new LoxClass(className, methods, curEnv, superClass);
         curEnv.declareVar(className, classObj);
         return null;
     }

@@ -23,7 +23,9 @@ public class GenerateAst {
                 "Assign:String varName,Token var,Token equal,Expr expr",
                 "Call:Expr fun,Token call,List<Expr> args",
                 "Get:Expr obj,Token dot,Token field",
-                "Set:Expr obj,Token dot,Token field,Token equal,Expr value"
+                "Set:Expr obj,Token dot,Token field,Token equal,Expr value",
+                "This:Token token",
+                "Super:Token token,Token method"
             ), 
             Arrays.asList(
                 "com.blaine.lox.Token",
@@ -33,7 +35,7 @@ public class GenerateAst {
 
         // defines expression visitor
         defineVisitor("com/blaine/lox/generated", "Expr", Arrays.asList(
-            "Binary", "Unary", "Grouping", "Literal", "Variable", "Assign", "Call", "Get", "Set"
+            "Binary", "Unary", "Grouping", "Literal", "Variable", "Assign", "Call", "Get", "Set", "This", "Super"
         ));
 
         // defines statement
@@ -47,11 +49,12 @@ public class GenerateAst {
                 "If:Expr cond,Stmt ifClause,Stmt elseClause",
                 "While:Expr cond,Stmt stmt",
                 "Return:Expr value,Token token",
-                "Class:Token name,List<DecFunStmt> methods"
+                "Class:Token name,VariableExpr superClass,List<DecFunStmt> methods"
             ), 
             Arrays.asList(
                 "java.util.List",
-                "com.blaine.lox.Token"
+                "com.blaine.lox.Token",
+                "com.blaine.lox.generated.Expr.VariableExpr"
             )
         );
 

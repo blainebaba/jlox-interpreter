@@ -143,6 +143,20 @@ public class InterpreterTest {
         assertEquals(2.0, env.getVar("b"));
     }
 
+    @Test
+    public void testClassInheritance() {
+        execute(parseStmts("class Foo { get() {return 1;} } class Bar < Foo {} var bar = Bar(); var a = bar.get();"));
+        assertEquals(1.0, env.getVar("a"));
+        execute(parseStmts("class FooFoo { get() {return 1;} } class BarBar < FooFoo { get() {return 2;}} var barbar = BarBar(); var b = barbar.get();"));
+        assertEquals(2.0, env.getVar("b"));
+    }
+
+    @Test
+    public void testClassSuperVariable() {
+        execute(parseStmts("class Foo { get() {return 1;} } class Bar < Foo { get() {return super.get() + 1;} } var bar = Bar(); var a = bar.get();"));
+        assertEquals(2.0, env.getVar("a"));
+    }
+
     private List<Stmt> parseStmts(String script) {
         List<Token> tokens = new Scanner(script).scan();
         Parser parser = new Parser(tokens);
@@ -153,6 +167,15 @@ public class InterpreterTest {
         new VarResolver(interpreter).resolve(stmts);
         assertTrue(parser.isEnd());
         return stmts;
+    }
+
+    private void parseExpectError(String script) {
+        try {
+            parseStmts(script);
+        } catch (ParserError e) {
+            return;
+        }
+        fail("runtime error expected");
     }
 
     private void execute(List<Stmt> stmts) {

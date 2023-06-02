@@ -42,7 +42,7 @@ public class ExprEvaluateTest {
             }
         };
 
-        dummyClass = new LoxClass("Foo", new ArrayList<>(), env);
+        dummyClass = new LoxClass("Foo", new ArrayList<>(), env, null);
 
     }
 

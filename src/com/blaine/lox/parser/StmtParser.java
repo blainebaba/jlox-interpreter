@@ -3,6 +3,7 @@ package com.blaine.lox.parser;
 import com.blaine.lox.generated.Expr;
 import com.blaine.lox.generated.Stmt;
 import com.blaine.lox.generated.Expr.LiteralExpr;
+import com.blaine.lox.generated.Expr.VariableExpr;
 import com.blaine.lox.generated.Stmt.PrintStmt;
 import com.blaine.lox.generated.Stmt.ExpressionStmt;
 import com.blaine.lox.generated.Stmt.BlockStmt;
@@ -116,6 +117,12 @@ public class StmtParser {
     private Stmt decClassStmt() {
         p.match(CLASS);
         Token className = p.match(IDENTIFIER);
+        VariableExpr superClass = null;
+        if (p.peek(LESSER)) {
+            p.consume();
+            Token sc = p.match(IDENTIFIER);
+            superClass = new VariableExpr((String)sc.literalValue, sc);
+        }
 
         List<DecFunStmt> methods = new ArrayList<>();
         p.match(LEFT_BRACE);
@@ -124,7 +131,7 @@ public class StmtParser {
         }
         p.match(RIGHT_BRACE);
 
-        return new ClassStmt(className, methods);
+        return new ClassStmt(className, superClass, methods);
     }
 
     private Stmt printStmt() {

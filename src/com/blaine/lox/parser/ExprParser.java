@@ -16,6 +16,8 @@ import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
 import com.blaine.lox.generated.Expr.SetExpr;
+import com.blaine.lox.generated.Expr.SuperExpr;
+import com.blaine.lox.generated.Expr.ThisExpr;
 
 import static com.blaine.lox.Token.TokenType.*;
 
@@ -128,9 +130,13 @@ public class ExprParser {
             Token var = p.consume();
             return new VariableExpr((String)var.literalValue, var);
         } else if (p.peek(THIS)) {
-            Token var = p.consume();
-            return new VariableExpr("this", var);
-            // store it as a variable
+            Token token = p.consume();
+            return new ThisExpr(token);
+        } else if (p.peek(SUPER)) {
+            Token token = p.consume();
+            p.match(DOT);
+            Token method = p.match(IDENTIFIER);
+            return new SuperExpr(token, method);
         } else if (p.peek(NUMBER, STRING)) {
             Token token = p.consume();
             return new LiteralExpr(token.literalValue, token);

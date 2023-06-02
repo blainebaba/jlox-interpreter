@@ -7,6 +7,8 @@ import com.blaine.lox.generated.Expr.GetExpr;
 import com.blaine.lox.generated.Expr.GroupingExpr;
 import com.blaine.lox.generated.Expr.LiteralExpr;
 import com.blaine.lox.generated.Expr.SetExpr;
+import com.blaine.lox.generated.Expr.SuperExpr;
+import com.blaine.lox.generated.Expr.ThisExpr;
 import com.blaine.lox.generated.Expr.UnaryExpr;
 import com.blaine.lox.generated.Expr.VariableExpr;
 
@@ -41,10 +43,16 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
     private Stack<Map<String,Boolean>> scopes;
     private Interpreter interpreter;
     private Stack<FunType> funType;
+    private Stack<ClassType> classType;
 
     // current function context, use this to identify invalid "return" and "this" usage.
     public static enum FunType {
         NONE, FUNCTION, METHOD, INITIALIZER
+    }
+
+    public static enum ClassType {
+        // SUPER: a class with super
+        NONE, CLASS, SUPER
     }
 
     public VarResolver(Interpreter interpreter) {
@@ -59,13 +67,16 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
         }
         this.scopes.push(rootScope);
         funType = new Stack<>();
+        classType = new Stack<>();
     }
 
     public void resolve(List<Stmt> stmts) {
         funType.push(FunType.NONE);
+        classType.push(ClassType.NONE);
         for (Stmt stmt : stmts) {
             stmt.accept(this);
         }
+        classType.pop();
         funType.pop();
      }
 
@@ -155,8 +166,15 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
     public Void visitClassStmt(ClassStmt klass) {
         defineVar((String)klass.name.literalValue);
 
+        ClassType type = ClassType.CLASS;
+        if (klass.superClass != null) {
+            klass.superClass.accept(this);
+            type = ClassType.SUPER;
+        }
+
         // add additional scope for methods
         scopes.push(new HashMap<>());
+        classType.push(type);
 
         for (DecFunStmt funStmt : klass.methods) {
             if (funStmt.funName.equals("init")) {
@@ -168,6 +186,7 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
             funType.pop();
         }
 
+        classType.pop();
         scopes.pop();
 
         return null;
@@ -242,7 +261,6 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
 
     @Override
     public Void visitVariableExpr(VariableExpr varExpr) {
-
         int diff;
         if (varExpr.varName.equals("this")) {
             // always fixed.
@@ -287,6 +305,29 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
     public Void visitSetExpr(SetExpr set) {
         set.obj.accept(this);
         set.value.accept(this);
+        return null;
+    }
+
+    @Override
+    public Void visitThisExpr(ThisExpr expr) {
+        if (classType.peek() == ClassType.NONE) {
+            throw new ParserError("Can't use 'this' outside of class.", expr.token.line, expr.token.column);
+        }
+        // fix value
+        interpreter.storeVarResolution(expr, 1);
+        return null;
+    }
+
+    @Override
+    public Void visitSuperExpr(SuperExpr expr) {
+        if (classType.peek() == ClassType.NONE) {
+            throw new ParserError("Can't use 'super' outside of class.", expr.token.line, expr.token.column);
+        }
+        if (classType.peek() == ClassType.CLASS) {
+            throw new ParserError("Can't use 'super' on class without super class.", expr.token.line, expr.token.column);
+        }
+        // fix value
+        interpreter.storeVarResolution(expr, 2);
         return null;
     }
 }

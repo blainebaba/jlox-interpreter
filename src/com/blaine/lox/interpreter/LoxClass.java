@@ -9,14 +9,16 @@ public class LoxClass implements LoxCallable {
     public String className;
     public Map<String, LoxFunction> methods;
     public Environment env;
+    public LoxClass superClass;
 
-    public LoxClass(String className, List<LoxFunction> methods, Environment env) {
+    public LoxClass(String className, List<LoxFunction> methods, Environment env, LoxClass superClass) {
         this.className = className;
         this.methods = new HashMap<>();
         for (LoxFunction method : methods) {
             this.methods.put(method.funName, method);
         }
         this.env = env;
+        this.superClass = superClass;
     }
 
     @Override
@@ -44,7 +46,11 @@ public class LoxClass implements LoxCallable {
     }
 
     public LoxFunction getMethod(String methodName) {
-        return methods.get(methodName);
+        LoxFunction method = methods.get(methodName);
+        if (method == null && superClass != null) {
+            method = superClass.getMethod(methodName);
+        }
+        return method;
     }
     
 }

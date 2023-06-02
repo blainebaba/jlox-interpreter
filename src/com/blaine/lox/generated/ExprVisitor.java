@@ -10,6 +10,8 @@ import com.blaine.lox.generated.Expr.AssignExpr;
 import com.blaine.lox.generated.Expr.CallExpr;
 import com.blaine.lox.generated.Expr.GetExpr;
 import com.blaine.lox.generated.Expr.SetExpr;
+import com.blaine.lox.generated.Expr.ThisExpr;
+import com.blaine.lox.generated.Expr.SuperExpr;
 
 public interface ExprVisitor<R> {
 
@@ -22,4 +24,6 @@ public interface ExprVisitor<R> {
     R visitCallExpr(CallExpr callexpr);
     R visitGetExpr(GetExpr getexpr);
     R visitSetExpr(SetExpr setexpr);
+    R visitThisExpr(ThisExpr thisexpr);
+    R visitSuperExpr(SuperExpr superexpr);
 }
