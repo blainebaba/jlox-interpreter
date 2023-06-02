@@ -110,33 +110,49 @@ public class InterpreterTest {
 
     @Test
     public void testClass() {
-        execute(parseStmts("class Foo {}; var foo = Foo();"));
+        execute(parseStmts("class Foo {} var foo = Foo();"));
         assertEquals(LoxClass.class, env.getVar("Foo").getClass());
         assertEquals(LoxInstance.class, env.getVar("foo").getClass());
+    }
 
-        execute(parseStmts("foo.v1 = 123; var a = foo.v1;"));
+    @Test
+    public void testClassProperties() {
+        execute(parseStmts("class Foo {} var foo = Foo();foo.v1 = 123; var a = foo.v1;"));
         assertEquals(123.0, env.getVar("a"));
+    }
+
+    @Test
+    public void testClassMethods() {
+        execute(parseStmts("class Bar { add(a,b) { return a + b;} } var b = 1; var c = 2; var d = Bar(); var e = d.add(b,c);"));
+        assertEquals(3.0, env.getVar("e"));
+
+    }
+
+    @Test
+    public void testClassThisVariable() {
+        execute(parseStmts("class FooFoo { get() {return this.value;} } var f = FooFoo(); var g = f.get();"));
+        assertEquals(null, env.getVar("g"));
+        execute(parseStmts("f.value = 123; g = f.get();"));
+        assertEquals(123.0, env.getVar("g"));
+    }
+
+    @Test
+    public void testClassInitializer() {
+        execute(parseStmts("class Foo { init(a,b) { this.a = a; this.b = b;} } var foo = Foo(1,2); var a = foo.a; var b = foo.b;"));
+        assertEquals(1.0, env.getVar("a"));
+        assertEquals(2.0, env.getVar("b"));
     }
 
     private List<Stmt> parseStmts(String script) {
         List<Token> tokens = new Scanner(script).scan();
         Parser parser = new Parser(tokens);
         List<Stmt> stmts = parser.parse();
+        if (parser.getErrors().size() > 0) {
+            throw parser.getErrors().get(0);
+        }
         new VarResolver(interpreter).resolve(stmts);
         assertTrue(parser.isEnd());
         return stmts;
-    }
-
-    private void parseExpectError(String script) {
-        List<Token> tokens = new Scanner(script).scan();
-        Parser parser = new Parser(tokens);
-        try {
-            List<Stmt> stmts = parser.parse();
-            new VarResolver(interpreter).resolve(stmts);
-        } catch (ParserError e) {
-            return;
-        }
-        fail("parser error expected");
     }
 
     private void execute(List<Stmt> stmts) {

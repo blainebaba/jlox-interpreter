@@ -42,4 +42,10 @@ public class LoxFunction implements LoxCallable {
             return e.returnValue;
         }
     }
+
+    public LoxFunction bind(LoxInstance instance) {
+        Environment methodEnv = new Environment(instance.klass.env);
+        methodEnv.declareVar("this", instance);
+        return new LoxFunction(funName, paramNames, stmts, methodEnv);
+    }
 }

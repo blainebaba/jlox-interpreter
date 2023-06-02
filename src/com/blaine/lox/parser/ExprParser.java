@@ -127,6 +127,10 @@ public class ExprParser {
         if (p.peek(IDENTIFIER)) {
             Token var = p.consume();
             return new VariableExpr((String)var.literalValue, var);
+        } else if (p.peek(THIS)) {
+            Token var = p.consume();
+            return new VariableExpr("this", var);
+            // store it as a variable
         } else if (p.peek(NUMBER, STRING)) {
             Token token = p.consume();
             return new LiteralExpr(token.literalValue, token);

@@ -40,7 +40,9 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
     // bool value indicates whether this var is ready to be used.
     private Stack<Map<String,Boolean>> scopes;
     private Interpreter interpreter;
- 
+    // flag indicates whether statement is in class.
+    private boolean isInClass = false;
+
     public VarResolver(Interpreter interpreter) {
         this.interpreter = interpreter;
 
@@ -55,6 +57,7 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
     }
 
     public void resolve(List<Stmt> stmts) {
+        isInClass = false;
         for (Stmt stmt : stmts) {
             stmt.accept(this);
         }
@@ -140,6 +143,19 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
     public Void visitClassStmt(ClassStmt klass) {
         // TODO
         defineVar((String)klass.name.literalValue);
+
+        // add additional scope for methods
+        scopes.push(new HashMap<>());
+        boolean oldIsInClass = this.isInClass;
+        this.isInClass = true;
+
+        for (DecFunStmt funStmt : klass.methods) {
+            funStmt.accept(this);
+        }
+
+        this.isInClass = oldIsInClass;
+        scopes.pop();
+
         return null;
     }
 
@@ -207,7 +223,17 @@ public class VarResolver implements ExprVisitor<Void>, StmtVisitor<Void> {
 
     @Override
     public Void visitVariableExpr(VariableExpr varExpr) {
-        int diff = calculateDiff(varExpr.varName);
+
+        int diff;
+        if (varExpr.varName.equals("this")) {
+            // always fixed.
+            diff = 1;
+            if (!isInClass) {
+                throw new ParserError("Can't use 'this' out side of methods.", varExpr.token.line, varExpr.token.column);
+            }
+        } else {
+            diff = calculateDiff(varExpr.varName);
+        }
         interpreter.storeVarResolution(varExpr, diff);
         return null;
     }

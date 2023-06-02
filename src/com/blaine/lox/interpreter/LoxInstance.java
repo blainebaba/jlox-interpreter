@@ -19,12 +19,20 @@ public class LoxInstance {
     }
 
     public Object get(String name) {
-        // TODO could also be methods
-        return fields.get(name);
+        if (fields.containsKey(name)) {
+            return fields.get(name);
+        }
+
+        LoxFunction method = (LoxFunction)this.klass.getMethod(name);
+        if (method != null) {
+            // add additional scope to include "this"
+            return method.bind(this);
+        } else {
+            return null;
+        }
     }
 
     public void set(String name, Object value) {
-        // TODO could also be methods?
         fields.put(name, value);
     }
 }

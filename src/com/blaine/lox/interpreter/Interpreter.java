@@ -327,15 +327,15 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
     @Override
     public Void visitDecFunStmt(DecFunStmt declare) {
         String funName = (String)declare.funName.literalValue;
-        LoxFunction function = createLoxFunction(declare);
+        LoxFunction function = createLoxFunction(declare, curEnv);
         curEnv.declareVar(funName, function);
         return null;
     }
 
-    private LoxFunction createLoxFunction(DecFunStmt declare) {
+    private LoxFunction createLoxFunction(DecFunStmt declare, Environment closureEnv) {
         String funName = (String)declare.funName.literalValue;
         List<String> params = declare.params.stream().map(t -> (String)t.literalValue).collect(Collectors.toList());
-        LoxFunction function = new LoxFunction(funName, params, declare.stmts, curEnv);
+        LoxFunction function = new LoxFunction(funName, params, declare.stmts, closureEnv);
         return function;
     }
 
@@ -344,7 +344,7 @@ public class Interpreter implements ExprVisitor<Object>, StmtVisitor<Void> {
         String className = (String)klass.name.literalValue;
         List<LoxFunction> methods = new ArrayList<>();
         for (DecFunStmt method : klass.methods) {
-            methods.add(createLoxFunction(method));
+            methods.add(createLoxFunction(method, curEnv));
         }
         LoxClass classObj = new LoxClass(className, methods, curEnv);
         curEnv.declareVar(className, classObj);

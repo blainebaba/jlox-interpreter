@@ -218,6 +218,7 @@ public class StmtExecuteTest {
         // invalid
         parseExpectError("class Foo;");
         parseExpectError("class Foo { 1 + 1;}");
+        parseExpectError("fun foo { return this.value;}");
     }
 
 }
